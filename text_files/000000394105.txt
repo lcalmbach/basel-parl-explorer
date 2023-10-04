@@ -1,0 +1,31 @@
+Anzug  betreffend praktische und sichere digitale Inf rastruktur für 
+Kommissionen und Fraktionen  21.5297.01 
+ 
+ 
+Ein Teil der Parlamentsarbeit läuft bereits heute via PIXAS digital ab. Trotzdem findet der  grosse 
+Teil ausserhalb dieser Umgebung statt. Dabei ko mmen Programme mit schwachem  oder gar 
+keinem Datenschutz zum Einsatz. Zudem ist die Vielzahl an Anwendungen mühsam.  
+Berichtsentwürfe werden über ungeschützte E -mail-accounts verschickt, die Arbeit einer  
+Kommissionsminderheit findet in google.docs statt, Fr aktionen verwalten ihre Dateien auf  dropbox. 
+All diese Anwendungen genügen den Ansprüchen einer seriösen Parlamentsarbeit  nicht. Nachdem 
+der Anzug Moesch zu sicheren Parlaments -E-mail-accounts (link) ohne  Ergebnis abgeschrieben 
+wurde, soll mit diesem Anzug  das Problem infrastrukturseitig  angegangen werden.  
+Eine sichere und zweckmässige digitale Infrastruktur soll eine Kommissionsarbeit  ermöglichen, in 
+der entweder die ganze oder Teile der Kommission kollaborativ an  Dokumenten arbeiten und diese 
+mit Externen  (Verwaltung, Gäste, Grosser Rat usw.) teilen  bzw. bearbeiten lassen können. 
+Fraktionen soll es möglich werden, ihre internen Dokumente  nach der für sie passenden Struktur 
+vorzubereiten und Dokumente mit Externen (andere  Fraktionen, Parlamentsdienst usw.) teilen 
+bzw. bearbeiten lassen zu können.  Es ist also eine digitale Infrastruktur nötig mit einerseits 
+starkem Datenschutz (Schweizer  Server, DSGVO -konform) und anderseits einer differenzierten 
+und flexiblen  Admingestaltung, so dass sowohl Kommissionen wie auch Fraktionen ihre Dateien  
+personenscharf intern und extern bearbeiten und freischalten können.  Der Kanton Basel -Stadt, die 
+Gemeinde Riehen sowie auch der Landrat BL arbeiten mit CMI  (AXIOMA); dies könnte ein 
+Anknüpfungspunkt sein.  
+Die Anzugsstellenden b itten das Büro des Grossen Rats zu prüfen und berichten,  
+1. Wie es die aktuelle digitale Infrastruktur in Sachen Datenschutz und  Nutzungsfreundlichkeit 
+bewertet.  
+2. Wie die oben beschriebene digitale Infrastruktur für die Parlamentsarbeit eingeführt  werden 
+kann.  
+3. Ob ein Pilotversuch in vorerst einer Kommission Sinn macht.  
+Raphael Fuhrer, Danielle Kaufmann, Niggi Daniel Rechsteiner, Karin Sartorius, Andrea 
+Elisabeth Knellwolf, Edibe Gölgeli, Michela Seggiani, Oliver Bolliger, Heidi Mück  

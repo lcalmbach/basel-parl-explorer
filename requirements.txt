@@ -1,0 +1,6 @@
+streamlit 
+streamlit_lottie
+streamlit_aggrid
+streamlit_option_menu
+langchain
+iso639==0.1.4

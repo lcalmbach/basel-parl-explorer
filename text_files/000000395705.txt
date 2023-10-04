@@ -1,0 +1,48 @@
+ 
+Motion zur Schaffung von rechtlichen Grundlagen für die Anwendung von 
+algorithmus -basierter Instrumente in der Polizeiarbeit  21.5704 .01 
+ 
+Der Einsatz moderner Technologien hat in der Polizeiarbeit Einzug gehalten. Unter dem Titel  "Predictive Policing " 
+oder "Pre-Crime " verbreiten sich weltweit Methoden und Programme, von  denen man sich eine erhöhte 
+Kriminalitätsprävention verspricht. Predictive Policing (deutsch:  vorhersagende Polizeiarbeit) bezeichnet dabei die 
+Nutzung mathematischer und statistischer  Wahr scheinlichkeitsanalysen, um kriminelle Risiken bereits im Vorfeld 
+strafbarer Handlungen zu  identifizieren. Dabei werden in der Regel grosse Datenmengen durchsucht (" Big Data " 
+und "Data Mining ") oder auf der Grundlage bisher gesammelter Daten Prognosen gest ellt. Diese Verfahren sind  
+in der Regel automatisiert, d.h. sie gestalten sich nach den vorab definierten Algorithmen der  Entwickler. Auch in 
+unserem Kanton werden solche Instrumente eingesetzt oder ihr Einsatz geprüft.  
+Die Fachdebatte zeigt auf, dass algo rithmus -basierte Instrumente eine sehr hohe Erkennungsrate von  
+Hochrisikofällen versprechen, gleichzeitig mit diesem Versprechen jedoch auch die Anzahl der  Personen 
+zunimmt, die als gefährlich bezeichnet werden, die es in Wirklichkeit jedoch gar nicht sind . 
+In der Praxis werden diese Instrumente bis anhin nur als ein Element benutzt – eine Einzelfallbeurteilung findet 
+nach wie vor statt. Es ist jedoch nicht von der Hand zu weisen, dass mit  diesen Instrumenten eine vermeintliche 
+Objektivität vorgegeben wird,  obwohl die Grundlagen von  Menschen - mit ihren Wertungen, Einschätzung und 
+Interpretationen - geschaffen sind. Algorithmen  neigen dazu, gesellschaftliche Vorurteile zu spiegeln. Zudem 
+weisen Entscheide, die von einem  Algorithmus getroffen werden, keine Be gründung auf, was mit Blick auf das 
+rechtliche Gehör  problematisch ist. Der Druck, dass sich die Polizei auf diese Instrumente verlässt und 
+entsprechende  Massnahmen ergreift, nimmt zu, möchte doch keine verantwortliche Person, trotz 
+Einzelfallwertung,  eine Person als ungefährlich deklarieren, die von einem Vorhersage -lnstrument anders beurteilt  
+wurde.  
+Predictive Policing kommt zu einem Zeitpunkt zum Einsatz, in dem noch keine Straftat geschehen ist  und deshalb 
+die Unschuldsvermutung zu gelten hat. Es gilt h ier Bürgerinnen und Bürger vor  potenziell ungerechtfertigten 
+Eingriffen in ihre Freiheitsrechte zu schützen. Der technologische  Fortschritt muss mit Gesetzesvorgaben 
+begleitet werden, welche die Balance zwischen Freiheit und  Sicherheit angemessen wahrt. De r Gesetzgeber 
+muss entscheiden, ob und unter welchen  Bedingungen mit Predictive Policing einhergehende 
+Grundrechtseingriffe, z.B. aufgrund der  Bearbeitung hochsensibler Daten, erfolgen sollen. Ebenso muss geklärt 
+werden, wie viel Vertrauen in  die - oftmals  nicht angemessen evaluierten - algorithmischen Tools gesetzt werden 
+darf. 
+Die Polizeiarbeit soll sich dem technologischen Fortschritt nicht verschliessen. Dieser muss jedoch  vorsichtig, 
+reflektiert und auf einer soliden rechtlichen Grundlage geschehen. Di ese fehlt in unserem  Kanton bisher. Auch 
+das Informations - und Datenschutzgesetz regelt den Einsatz dieser neuen  Instrumente noch nicht.  
+Die Motionärinnen und Motionäre fordern deshalb vom Regierungsrat innerhalb zwei Jahren eine  gesetzliche 
+Grundlage zu s chaffen, die  
+a. die systematische und automatisierte Bearbeitung von Personendaten, Persönlichkeitsprofilen sowie 
+Profiling zum Zweck der Prävention und Vorhersage von Straftaten sowie zur Einschätzung der 
+Gefährlichkeit von Personen klar regelt.  
+b. Die Anschaff ung dieser algorithmus -basierten Software zur Datenbearbeitung regelt.  
+c. einen jährlichen Bericht verlangt, welche über den Einsatz dieser algorithmus -basierten Instrumente und 
+deren Evaluation an geeigneter Stelle Rechenschaft ablegt.  
+Thomas Gander, Michell e Lachenmeier, Luca Urgese, Claudia Baumgartner, Danielle Kaufmann, 
+Tonja Zürcher, Beda Baumgartner, Christian von Wartburg, Edibe Gölgeli, Heidi Mück, Michela 
+Seggiani, Stefan Wittlin, Barbara Heer, Sasha Mazzotti, Laurin Hoppler  
+ 
+ 

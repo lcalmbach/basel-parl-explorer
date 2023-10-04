@@ -1,0 +1,29 @@
+Anzug  betreffend  Parlaments -Email -Adressen  19.5540.01 
+ 
+Zahlreiche Kantone haben sie, teilweise schon seit länger em, die persönlichen Email-Adressen für 
+Parlamentsmitglieder, beispielsweise der Kanton Aarga u (Hans.Muster@grossrat.ag.ch), der Kanton 
+Baselland (Susanne.Beispiel@lr-bl.ch), aber auch der Ka nton Freiburg (francoise.exemple@parl.fr.ch). 
+Persönliche Email-Adressen für Parlamentsmitglieder hab en verschiedene Vorteile.  
+Eine einheitliche Email-Adresse macht es einfacher, mit den entsprechenden Parlamentsmitgliedern 
+Kontakt aufzunehmen, ohne dass man jeweils zuerst die k orrekte oder gültige Adresse im GR-
+Verzeichnis suchen muss. 
+Zudem ist eine persönliche und bestenfalls auch zertifi zierte bzw. digital signierte Email-Adresse im 
+Mailverkehr auch eine eindeutige Identifikation der Parlamentarierin bzw. des Parlamentariers im 
+Austausch einerseits innerhalb des Parlamentsbetriebs, der  Verwaltung, aber auch gegenüber Dritten. 
+Diese Sicherheit ist bei persönlichen resp. privaten Emai l-Adresse niemals möglich. 
+Weiter bietet eine Parlaments-Email-Adresse, welche üb er die kantonale IT verwaltet resp. gehostet 
+wird, zusätzliche Sicherheit, insbesondere beim Austausch u nd Versand von (vertraulichen) 
+Dokumenten. Dabei würde sichergestellt, dass beim Versa nd an «interne» Email-Adressen die 
+entsprechenden Informationen und Dokumente ausschliesslich innerhalb der kantonseigenen IT-
+Umgebung verbleiben. Derlei ist absolut nicht gegeben,  wenn die Empfänger insbesondere hinlänglich 
+bekannte kostenlose Email-Adressen oder aber Webhostings  nutzen, bei welchen oftmals nicht 
+bekannt ist, wo diese gespeichert/verwaltet werden noch  wie das entsprechende Sicherheitsdispositiv 
+aussieht. 
+Aus obgenannten Gründen erscheint es daher sinnvoll, de n Parlamentsmitgliedern künftig eine 
+spezifische kantonale Email-Adresse zuzuweisen und auch de n Austausch resp. Kommunikation 
+ausschliesslich über diese abzuwickeln. 
+Der Anzugssteller bittet daher das Ratsbüro zu prüfen  und zu berichten, ob, wie und wie schnell sich 
+die Implementierung solcher Parlaments-Email-Adressen (z.B. mit der spezifischen Grossrats-Domain 
+Hans.Muster@grosserrat.bs.ch oder der üblichen der kanton alen Verwaltung 
+Susanne.Beispiel@bs.ch) umsetzen lässt. 
+Christian C. Moesch 

@@ -1,0 +1,26 @@
+Anzug  betreffend Aufnahme der Grossratsge schäfte und 
+Abstimmungsdaten in die Open Government Data Plattform des 
+Kanton Basel -Stadt  21.5430.01 
+ 
+ 
+ 
+ 
+Alle Geschäfte des Grossrats und die dazugehörigen Abstimmungsresultate werden  elektronisch 
+in einer zentral en Datenbank  erfasst und können dort von all en interessierten  Personenkreisen 
+eingesehen werden. Die Geschäfte und die Abstimmungen werden in zwei  voneinander 
+getrennten Datenhaltungen (Datenbank der Geschäfte und die Abstimmungen  als PDF) abgelegt.  
+Diese wertvollen Daten werden von Verbänden, Medien, Parteien, Lehre und Forschung  u.v.a. 
+regelmässig verwendet, um eigene Analysen anzustellen. Wie bereits erwähnt sind die  Daten 
+unterschiedlich und zum Teil unstrukturiert abgelegt. Sie können nur mit erheblich em Aufwand 
+weiterbearbeitet werden. Sie müssen manuell extrahieren, strukturieren und mit  eigenen Daten 
+bereichert werden. Eine Konsolidierung, Strukturierung und elektronische  Verfügbarkeit über die 
+Open Data Plattform kann allen einen erheblichen Mehrwer t bringen.  
+Die Anzugsstellenden bitten das Büro des Grossen Rats zu prüfen und berichten,  
+- Wie die Geschäftsdaten des Grossrats nach verschiedenen Kriterien bereichert und  
+strukturiert auswertbar werden.  
+- Wie die Geschäftsdaten und Abstimmungsergebnisse stru kturiert und auswertbar auf  der 
+Open Data Plattform eingebunden werden können, damit diese vereinfacht  extrahierbar und 
+bearbeitbar werden.  
+Olivier Battaglia, Balz Herter, Raoul I. Furlano, Jeremy Stephenson, Annina von 
+Falkenstein, Michael Hug, Sandra Bot he, Marianne Hazenkamp -von Arx, Luca Urgese, 
+Lukas Faesch, François Bocherens, Thomas Müry  

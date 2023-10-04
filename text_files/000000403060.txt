@@ -1,0 +1,57 @@
+ 
+  
+  Schriftliche Anfrage betreffend KI-Systemen im Kanton Basel -Stadt  22.5461. 01 
+ 
+Wie im Bericht derJustiz -, Sicherheits - und Sportkommission (21.1239.02) zum Ratschlag zu einer  Änderung des 
+Gesetzes über die Information und den Datenschutz vom 9. Juni 2010 (Informations - und Datenschutzgesetz, 
+IDG) und weiterer Gesetze unter Punkt 4 aufgeführt, beschloss die  Kommission, einen parlamentarischen 
+Vorstoss mit einer weitergehenden Ausformulierung der  Thematik zu den wesentlichen Punkten wie Definition der 
+Begrif flichkeiten (Künstliche Intelligenz,  algorithmus -basiert  etc.), Risiken und Chancen der Technologie, 
+Anwendungsbereiche,  Regelungsmöglichkeiten etc. einzureichen.  
+Die Anfragende, stellvertretend für die Kommission, möchte nach einem Hearing mit Prof. Dr. N adja Braun Binder 
+(Universität Basel) zunächst mit dieser Schriftlichen Anfrage weitere Informationen  erhalten.  
+Die nachfolgenden Fragen stützen sich hierbei auf folgende, technologieneutrale Definition von Kl -Systemen:  
+"Aus technischer Perspektive handelt  es sich um einen etablierten Sammelbegriff, der eine Reihe von  
+Technologien  umfasst, die automatisierte Entscheidungen fällen, Empfehlungen machen, 
+Schlussfolgerungen ziehen oder Vorhersagen  treffen. Dazu gehören wissensbasierte Systeme und  
+statistische M ethoden ebenso wie Ansätze des maschinellen Lernens (z.B. unter Einsatz neuronaler  Netze). Die 
+grosse Leistungsfähigkeit dieser Technologien basiert meist auf der Aneinanderreihung  einer Vielzahl von 
+mathematischen Optimierungen, die unter Nutzung grosser Rechnerkapazitäten  Strukturen aus grossen 
+Datenmengen  extrahieren " (Hervorhebungen durch Autorin)  (Thouvenin, Florent/Christen, Markus/Bernstein, 
+Abraham/Braun Binder, Nadja/Burri,  Thomas/Donnay, Karsten/Jäger, Lena/Jaffe, Mariela/Krauthammer, 
+Michael/Lohm ann, Melinda/Mätzener, Anna/Mützel, Sophie/Obrecht, Liliane/Ritter, Nicole/Spielkamp, 
+Matthias/Volz,  Stephanie, Ein Rechtsrahmen für Künstliche Intelligenz, Positionspapier, 2021, abrufbar unter:  
+https://www.dsi.uzh.ch/de/research/ strategy -lab.html).   
+Hierzu bitten wir den Regierungsrat folgende Fragen zu beantworten. Dabei ist zu beachten, dass sich  die Fragen 
+auch auf öffentlich -rechtliche Anstalten wie insbesondere die IWB, die BVB, die  Universität und die öffentlichen 
+Spitäler beziehen.  
+1. Welche Systeme v erwendet unser Kanton heute, die unter diese Definition fallen?  
+a. Wir bitten um eine Auflistung nach Departementen bzw. öffentlich -rechtlichen Anstalten sowie Art und 
+Bezeichnung der Anwendung  
+b. Wir bitten jeweils um entsprechenden Hinweis, falls die Systeme G rundlagen für Entscheidungen 
+liefern, die sich auf natürliche oder juristische Personen auswirken oder falls die Systeme solche 
+Entscheidungen selbst treffen (automatisierte Einzelentscheidung)  
+2. Welche Systeme plant der Kanton in den kommenden Jahren anzusc haffen oder selbst zu  entwickeln, die 
+unter diese Definition fallen?  
+a. Wir bitten um eine Auflistung nach Departementen bzw. öffentlich -rechtlichen Anstalten sowie Art und 
+Bezeichnung der Anwendung  
+b. Wir bitten jeweils um entsprechenden Hinweis, falls die Syst eme Grundlagen für Entscheidungen 
+liefern, die sich auf natürliche oder juristische Personen auswirken oder falls die Systeme solche 
+Entscheidungen selbst treffen (automatisierte Einzelentscheidung)  
+3. Welchen kantonalen Regulierungsbedarf (in Querschnittsges etzen wie z.B. dem OG, IDG oder  VRPG, 
+sowie in bereichsspezifischen Rechtsgrundlagen) erkennt der Regierungsrat  insbesondere bezüglich 
+Sicherstellung des Daten - und Persönlichkeitsschutzes, der  Einhaltung der Verfahrensgarantien (z.B. 
+Begründungspflicht) s owie der Verhinderung von  Diskriminierung für die Anwendung solcher Systeme?  
+4. Welche konkreten Anforderungen sind aus Sicht des Regierungsrates insbesondere mit Blick  auf die 
+folgenden Aspekte vorzusehen:  
+a. Beschaffungskriterien  
+b. Qualitätserfordernisse ( hinsichtlich der eingesetzten Algorithmen und Daten)  
+c. Schulung der Mitarbeitenden (digital literacy)  
+d. Transparenz (z.B. Transparenzregister für solche Systeme)  
+e. Aufsicht  
+Danielle Kaufmann  
+ 
+ 
+ 
+ 
+ 

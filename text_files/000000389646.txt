@@ -1,0 +1,26 @@
+Anzug betreffend einer möglichst papierlosen Steuere rklärung 
+mittels BALTax 19.5186.01 
+ 
+Das PC-Programm BalTax unterstützt das elektronische Au sfüllen der Steuererklärung für natürliche 
+Personen und ist für alle gängigen Betriebssysteme verfü gbar. Diese Form der Steuerdeklaration wird 
+rege von den Steuerpflichtigen genutzt. 
+Nach erfolgter Steuerdeklaration kann die Steuererklä rung elektronisch übermittelt werden. Um die 
+einzelne Deklaration freizugeben, muss die unterzeich nete Freigabe-Quittung an die Steuerverwaltung 
+per Post geschickt werden. 
+Zusammen mit der Freigabe-Quittung sind alle notwendi gen Belege und Unterlagen der Einlagemappe 
+für Steuerunterlagen beizulegen. Die Einlagemappe i st mit den Personalien des jeweiligen 
+Steuerpflichtigen vorgedruckt und ermöglicht die ordent liche Bearbeitung ihrer Steuerdeklaration. 
+„Zusammen mit den notwendigen Belegen und Unterlagen " ist ein unnötiger und ökologisch sinnloser 
+Vorgang. Zunehmend werden diese Belege und Unterlage n durch die unterschiedlichsten Institutionen 
+in elektronischer Form bereitgestellt. Der steuerpflicht ige muss heute alle elektronischen Unterlagen 
+ausdrucken und diese in die Einlegemappe legen. Die S teuerverwaltung digitalisiert (scannt) diese 
+Unterlagen und ordnet sie mittels einem Barcode der je weiligen Steuererklärung des Steuerpflichtigen 
+wieder zu. 
+Der Regierungsrat wird gebeten zu prüfen und zu beri chten ob: 
+- die notwendigen Belege und Unterlagen direkt in e lektronischer Form in das BALTax geladen und 
+zusammen mit der Steuerdeklaration übermittelt werde n können. 
+- ob eine digitale Signatur möglich ist, um die Einre ichung der Steuererklärung zusammen mit allen 
+Steuerunterlagen inklusive Freigabe-Quittung zu ermö glichen. 
+Olivier Battaglia, Peter Bochsler, Catherine Alioth, Sebastian Kölliker, Luca Urgese, Balz 
+Herter, Katja Christ, Jêrome Thiriet, Heinrich Ueberw asser, Beat K. Schaller, François 
+Bocherens 

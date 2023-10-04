@@ -1,0 +1,46 @@
+{
+  "source": {
+    "created_by": "Created by",
+    "powered_by": "Powered by",
+    "version": "Version",
+    "text_translation": "\u00dcbersetzung",
+    "language": "Sprache",
+    "get-request-error": "Fehler beim Abrufen der Daten",
+    "json-parsing-error": "Fehler beim Parsen der Daten",
+    "menu_options": ["Info", "Mitglieder", "Gremien", "Gesch\u00e4fte"],
+    "app_info": "Die App BaselParlExplorer stellt Suchen und Analysen zur Verf\u00fcgung um Informationen zum politischen Geschehen, insbesondere die Gesch\u00e4fte des Parlaments in Basel zu analysieren.\nVerwendete Daten- und Informationdsquellen: \n- [Grosser Rat des Kantons Basel-Stadt](https://grosserrat.bs.ch/)\n- [Wahl der 100 Mitglieder des Grossen Rates](https://data.bs.ch/explore/dataset/100101/)\n- [Grosser Rat: Dokumente](https://data.bs.ch/explore/dataset/100313/)\n- [Grosser Rat: Zuweisungen von Gesch\u00e4ften](https://data.bs.ch/explore/dataset/100312/)\n- [Grosser Rat: Mitgliedschaften in Gremien](https://data.bs.ch/explore/dataset/100308/)\n- [Grosser Rat (Basel-Stadt, wiki)](https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt))"
+  },
+  "de": {
+    "created_by": "Created by",
+    "powered_by": "Powered by",
+    "version": "Version",
+    "text_translation": "\u00dcbersetzung",
+    "language": "Sprache",
+    "get-request-error": "Fehler beim Abrufen der Daten",
+    "json-parsing-error": "Fehler beim Parsen der Daten",
+    "menu_options": ["Info", "Mitglieder", "Gremien", "Gesch\u00e4fte"],
+    "app_info": "Die App BaselParlExplorer stellt Suchen und Analysen zur Verf\u00fcgung um Informationen zum politischen Geschehen, insbesondere die Gesch\u00e4fte des Parlaments in Basel zu analysieren.\nVerwendete Daten- und Informationdsquellen: \n- [Grosser Rat des Kantons Basel-Stadt](https://grosserrat.bs.ch/)\n- [Wahl der 100 Mitglieder des Grossen Rates](https://data.bs.ch/explore/dataset/100101/)\n- [Grosser Rat: Dokumente](https://data.bs.ch/explore/dataset/100313/)\n- [Grosser Rat: Zuweisungen von Gesch\u00e4ften](https://data.bs.ch/explore/dataset/100312/)\n- [Grosser Rat: Mitgliedschaften in Gremien](https://data.bs.ch/explore/dataset/100308/)\n- [Grosser Rat (Basel-Stadt, wiki)](https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt))"
+  },
+  "fr": {
+    "created_by": "Cr\u00e9\u00e9 par",
+    "powered_by": "Propuls\u00e9 par",
+    "version": "Version",
+    "text_translation": "Traduction",
+    "language": "Langue",
+    "get-request-error": "Erreur lors de la r\u00e9cup\u00e9ration des donn\u00e9es",
+    "json-parsing-error": "Erreur lors de l'analyse des donn\u00e9es",
+    "menu_options": ["Info", "Membres", "Organes", "Affaires"],
+    "app_info": "L'application BaselParlExplorer fournit des recherches et des analyses pour analyser les informations sur les \u00e9v\u00e9nements politiques, en particulier les affaires du Parlement \u00e0 B\u00e2le.\nSources de donn\u00e9es et d'informations utilis\u00e9es :\n- [Grand Conseil du canton de B\u00e2le-Ville](https://grosserrat.bs.ch/)\n- [\u00c9lection des 100 membres du Grand Conseil](https://data.bs.ch/explore/dataset/100101/)\n- [Grand Conseil : Documents](https://data.bs.ch/explore/dataset/100313/)\n- [Grand Conseil : Attribution des affaires](https://data.bs.ch/explore/dataset/100312/)\n- [Grand Conseil : Adh\u00e9sions aux organes](https://data.bs.ch/explore/dataset/100308/)\n- [Grand Conseil (B\u00e2le-Ville, wiki)](https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt))"
+  },
+  "en": {
+    "created_by": "Created by",
+    "powered_by": "Powered by",
+    "version": "Version",
+    "text_translation": "Translation",
+    "language": "Language",
+    "get-request-error": "Error retrieving data",
+    "json-parsing-error": "Error parsing the data",
+    "menu_options": ["Info", "Members", "Committees", "Businesses"],
+    "app_info": "\"The BaselParlExplorer app provides search and analysis functions to analyze information about political events, especially the affairs of the parliament in Basel. \n\nUsed data and information sources:\n- [Grosser Rat des Kantons Basel-Stadt](https://grosserrat.bs.ch/)\n- [Election of the 100 members of the Grosser Rat](https://data.bs.ch/explore/dataset/100101/)\n- [Grosser Rat: Documents](https://data.bs.ch/explore/dataset/100313/)\n- [Grosser Rat: Assignments of affairs](https://data.bs.ch/explore/dataset/100312/)\n- [Grosser Rat: Memberships in committees](https://data.bs.ch/explore/dataset/100308/)\n- [Grosser Rat (Basel-Stadt, wiki)](https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt))\""
+  }
+}
