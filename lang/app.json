@@ -40,7 +40,7 @@
     "language": "Language",
     "get-request-error": "Error retrieving data",
     "json-parsing-error": "Error parsing the data",
-    "menu_options": ["Info", "Members", "Committees", "Businesses"],
-    "app_info": "\"The BaselParlExplorer app provides search and analysis functions to analyze information about political events, especially the affairs of the parliament in Basel. \n\nUsed data and information sources:\n- [Grosser Rat des Kantons Basel-Stadt](https://grosserrat.bs.ch/)\n- [Election of the 100 members of the Grosser Rat](https://data.bs.ch/explore/dataset/100101/)\n- [Grosser Rat: Documents](https://data.bs.ch/explore/dataset/100313/)\n- [Grosser Rat: Assignments of affairs](https://data.bs.ch/explore/dataset/100312/)\n- [Grosser Rat: Memberships in committees](https://data.bs.ch/explore/dataset/100308/)\n- [Grosser Rat (Basel-Stadt, wiki)](https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt))\""
+    "menu_options": ["Info", "Members", "Committees", "Matters"],
+    "app_info": "The BaselParlExplorer app provides search and analysis functions to analyze information about political events, especially the affairs of the parliament in Basel. \n\nUsed data and information sources:\n- [Grosser Rat des Kantons Basel-Stadt](https://grosserrat.bs.ch/)\n- [Election of the 100 members of the Grosser Rat](https://data.bs.ch/explore/dataset/100101/)\n- [Grosser Rat: Documents](https://data.bs.ch/explore/dataset/100313/)\n- [Grosser Rat: Assignments of affairs](https://data.bs.ch/explore/dataset/100312/)\n- [Grosser Rat: Memberships in committees](https://data.bs.ch/explore/dataset/100308/)\n- [Grosser Rat (Basel-Stadt, wiki)](https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt))"
   }
 }

@@ -120,7 +120,7 @@ def show_app_info():
     """
     cols = st.columns([1, 10, 1])
     with cols[1]:
-
+        st.header("🚧 Work in progress")
         st.image("./info_app_wide.jpg")
         st.header(f"{APP_EMOJI}{APP_NAME}")
         st.markdown(lang["app_info"], unsafe_allow_html=True)
