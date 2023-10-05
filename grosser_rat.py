@@ -2,7 +2,7 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 from lang import get_lang
-from helper import show_table, randomword 
+from helper import show_table, randomword
 
 PAGE = __name__
 
@@ -14,45 +14,47 @@ def lang(text):
 def get_filter(df: pd.DataFrame, filters: list, parliament):
     with st.sidebar.expander(f"🔎{lang('filter')}", expanded=True):
         if "member_name" in filters:
-            name = st.text_input(lang('member_name'))
+            name = st.text_input(lang("member_name"))
             df = df[
                 df["name"].str.contains(name, case=False)
                 | df["vorname"].str.contains(name, case=False)
             ]
         if "election_year" in filters:
             year_options = parliament.year_options
-            year_options = [lang('all')] + list(year_options)
+            year_options = [lang("all")] + list(year_options)
             year = st.selectbox("Wahljahr", year_options)
             if year_options.index(year) > 0:
                 df = df[df["wahljahr"] == year]
 
         if "active_member" in filters:
-            member_options = [lang('all'), "Aktive", "Ehemalige"]
-            is_member = st.selectbox(lang('membership_status'), options=member_options)
+            member_options = [lang("all"), "Aktive", "Ehemalige"]
+            is_member = st.selectbox(lang("membership_status"), options=member_options)
             if member_options.index(is_member) == 1:
-                df = df[df["active_member"] is True]
+                df = df[df["active_member"] == True]
             elif member_options.index(is_member) == 2:
-                df = df[df["active_member"] is False]
+                df = df[df["active_member"] == False]
 
         if "electoral_district" in filters:
-            district_options = [lang('all')] + parliament.electoral_district_options
-            district = st.selectbox(lang('voting_district'), district_options)
+            district_options = [lang("all")] + parliament.electoral_district_options
+            district = st.selectbox(lang("voting_district"), district_options)
             if district_options.index(district) > 0:
                 df = df[df["gr_wahlkreis"] == district]
 
         if "committee_type" in filters:
-            committee_type_options = [lang('all')] + parliament.committee_type_options
-            body_type = st.selectbox(lang('committee_type'), options=committee_type_options)
+            committee_type_options = [lang("all")] + parliament.committee_type_options
+            body_type = st.selectbox(
+                lang("committee_type"), options=committee_type_options
+            )
             if committee_type_options.index(body_type) > 0:
                 df = df[df["gremientyp"] == body_type]
         if "theme" in filters:
-            theme_options = [lang('all')] + parliament.pol_matters_themes
-            theme = st.selectbox(lang('theme'), options=theme_options)
+            theme_options = [lang("all")] + parliament.pol_matters_themes
+            theme = st.selectbox(lang("theme"), options=theme_options)
             if theme_options.index(theme) > 0:
                 df = df[(df["thema_1"] == theme) | (df["thema_2"] == theme)]
         if "member_party" in filters:
-            party_options = [lang('all')] + parliament.party_options
-            party = st.selectbox(lang('party'), options=party_options)
+            party_options = [lang("all")] + parliament.party_options
+            party = st.selectbox(lang("party"), options=party_options)
             if party_options.index(party) > 0:
                 df = df[df["partei_kname"] == party]
     return df
@@ -62,6 +64,122 @@ def get_table(table_nr: int):
     URL = f"https://data.bs.ch/api/explore/v2.1/catalog/datasets/{table_nr}/exports/csv?lang=de&timezone=Europe%2FBerlin&use_labels=false&delimiter=%3B"
     df = pd.read_csv(URL, sep=";")
     return df
+
+
+class Document:
+    def __init__(self, parent, row, signatur):
+        self.parent = parent
+        self.data = pd.DataFrame(row).T.reset_index()
+        self.data["themen"] = self.data["thema_1"]
+        self.data["themen"][self.data["thema_2"].notna()] = (
+            self.data["thema_1"] + ", " + self.data["thema_2"]
+        )
+        self.signatur = signatur
+        self.type = row["geschaftstyp"]
+        self.urheber = row["urheber"]
+        self.title = row["titel"]
+        self.start_date = row["beginn_datum"]
+        self.end_date = row["ende"]
+        self.url_matter = row["geschaft"]
+        self.url_doc = row["pdf_file_url"]
+        self.summary = row["summary"]
+
+    def show_detail(self):
+        st.markdown(f"{lang('document')}: **{self.title}**")
+        tabs = st.tabs(lang("document_tabs"))
+        with tabs[0]:
+            fields = [
+                "dokudatum",
+                "dok_laufnr",
+                "titel_dok",
+                "laufnr_ges",
+                "signatur_ges",
+                "titel_ges",
+                "url_ges",
+                "url_dok",
+            ]
+            df = self.data[fields].copy()
+            df["status"] = [
+                lang("in_progress") if x == "A" else lang("closed")
+                for x in df["status"]
+            ]
+            df.columns = [
+                "dokudatum",
+                "dok_laufnr",
+                "titel_dok",
+                "laufnr_ges",
+                "signatur_ges",
+                "titel_ges",
+                "url_ges",
+            ]
+            df = pd.DataFrame(df.T).reset_index().dropna()
+            df.columns = lang("field_value_cols")
+            table = df.to_html(index=False)
+            # st.markdown(table, unsafe_allow_html=True)
+        with tabs[1]:
+            cols = st.columns([2, 10])
+            with cols[0]:
+                ...
+            with cols[1]:
+                ...
+            with cols[0]:
+                ...
+            with cols[1]:
+                ...
+
+
+class Documents:
+    def __init__(self, parent, df):
+        self.parent = parent
+        self.all_elements = self.get_elements(df)
+
+    def get_elements(self, df):
+        fields = [
+            "dokudatum",
+            "dok_laufnr",
+            "titel_dok",
+            "laufnr_ges",
+            "signatur_ges",
+            "titel_ges",
+            "url_ges",
+            "url_dok",
+        ]
+        df = df[fields]
+        df["dokudatum"] = pd.to_datetime(df["dokudatum"])
+        df["year"] = df["dokudatum"].dt.year
+        return df[fields]
+
+    def select_item(self):
+        filters = ["year"]
+        self.filtered_elements = get_filter(self.all_elements, filters, self.parent)
+        fields = [
+            "dokudatum",
+            "titel_dok",
+            "signatur_ges",
+            "titel_ges",
+        ]
+        settings = {
+            "fit_columns_on_grid_load": False,
+            "height": 400,
+            "selection_mode": "single",
+            "key": "documents",
+        }
+        cols = []
+        st.subheader(
+            f"{lang('documents')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
+        )
+        sel_member = show_table(self.filtered_elements[fields], cols, settings)
+        if len(sel_member) > 0:
+            row = self.filtered_elements.set_index("dok_laufnr").loc[
+                sel_member["dok_laufnr"]
+            ]
+            doc = Document(self.parent, row, sel_member["dok_laufnr"])
+            doc.show_detail()
+
+    def filter(self, filters):
+        for filter in filters:
+            df = self.all_elements[self.all_elements[filter["key"]] == filter["value"]]
+        return df
 
 
 class Body:
@@ -97,7 +215,9 @@ class Body:
                 "selection_mode": "single",
                 "key": randomword(10),
             }
-            st.markdown(f"**{lang('committee_members')} {self.name}: {len(self.members)}**")
+            st.markdown(
+                f"**{lang('committee_members')} {self.name}: {len(self.members)}**"
+            )
             show_table(self.members, cols, settings)
 
 
@@ -162,7 +282,7 @@ class Bodies:
         }
         cols = []
         st.subheader(
-            f"{lang('parliament_committees')} ({len(self.filtered_elements)}/{len(self.all_elements)}"
+            f"{lang('parliament_committees')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
         if len(sel_member) > 0:
@@ -211,7 +331,7 @@ class Member:
                 "homepage",
             ]
             df = self.data[fields].copy().T.reset_index()
-            df.columns = lang('field_value_cols')
+            df.columns = lang("field_value_cols")
             df.dropna(inplace=True)
             table = df.to_html(index=False)
             st.markdown(table, unsafe_allow_html=True)
@@ -328,7 +448,7 @@ class Members:
         }
         cols = []
         st.subheader(
-            f"{lang('parliament_members')} ({len(self.filtered_elements)}/{len(self.all_elements)}"
+            f"{lang('parliament_members')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
         if len(sel_member) > 0:
@@ -354,10 +474,13 @@ class PolMatter:
         self.url_matter = row["geschaft"]
         self.url_doc = row["pdf_file_url"]
         self.summary = row["summary"]
+        self.documents = self.parent.documents.filter(
+            [{"key": "signatur_ges", "value": signatur}]
+        ).sort_values(by="dokudatum")
 
     def show_detail(self):
         st.markdown(f"{lang('matter')}: **{self.title}**")
-        tabs = st.tabs(lang('matter_tabs'))
+        tabs = st.tabs(lang("matter_tabs"))
         with tabs[0]:
             fields = [
                 "titel",
@@ -372,7 +495,8 @@ class PolMatter:
             ]
             df = self.data[fields].copy()
             df["status"] = [
-                lang('in_progress') if x == "A" else lang('closed') for x in df["status"]
+                lang("in_progress") if x == "A" else lang("closed")
+                for x in df["status"]
             ]
             df.columns = [
                 "Titel",
@@ -386,23 +510,16 @@ class PolMatter:
                 "Zusammenfassung",
             ]
             df = pd.DataFrame(df.T).reset_index().dropna()
-            df.columns = lang('field_value_cols')
+            df.columns = lang("field_value_cols")
             table = df.to_html(index=False)
             st.markdown(table, unsafe_allow_html=True)
+            st.write()
+            st.link_button(lang("matter"), self.url_matter, help=lang('more_info_pol_matter'))
         with tabs[1]:
-            cols = st.columns([2, 10])
-            with cols[0]:
-                st.link_button(lang('matter'), self.url_matter)
-            with cols[1]:
-                st.markdown(lang('all_info_docs_matter'))
-            with cols[0]:
-                st.link_button(lang('document'), self.url_doc)
-            with cols[1]:
-                st.markdown(lang('direct_link_pdf'))
-        #with tabs[2]:
-        #    st.markdown(lang('text'])
-        #with tabs[3]:
-        #    st.markdown(lang('word_cloud'])
+            text = ""
+            for index, row in self.documents.iterrows():
+                text += f"1. {row['dokudatum'].strftime('%d.%m.%y')} [{row['titel_dok']}]({row['url_dok']})\n"
+            st.markdown(text)
 
 
 class PolMatters:
@@ -418,12 +535,7 @@ class PolMatters:
         return df
 
     def select_item(self):
-        filters = [
-            "matter_title",
-            'year',
-            "author",
-            "theme"
-        ]
+        filters = ["matter_title", "year", "author", "theme"]
         self.filtered_elements = get_filter(self.all_elements, filters, self.parent)
         fields = ["signatur", "titel", "partei", "urheber", "beginn_datum", "ende"]
         settings = {
@@ -434,7 +546,7 @@ class PolMatters:
         }
         cols = []
         st.subheader(
-            f"{lang('pol_initiatives')} ({len(self.filtered_elements)}/{len(self.all_elements)}"
+            f"{lang('pol_initiatives')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
         if len(sel_member) > 0:
@@ -499,7 +611,7 @@ class Memberships:
         }
         cols = []
         st.subheader(
-            f"{lang('committee_members')} ({len(self.filtered_elements)}/{len(self.all_elements)}"
+            f"{lang('committee_members')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
         if len(sel_member) > 0:
@@ -514,30 +626,42 @@ class Memberships:
 
 class Parliament:
     def __init__(self):
-        df_all_members = get_table(100307)
-        df_all_members["gr_beginn"] = pd.to_datetime(df_all_members["gr_beginn"])
-        self.min_year = df_all_members["gr_beginn"].dt.year.min()
-        self.max_year = datetime.now().year
-        self.year_options = list(range(self.min_year, self.max_year + 1))
-        self.members = Members(self, df_all_members)
+        with st.spinner(lang("loading_data")):
+            df_all_members = get_table(100307)
+            df_all_members["gr_beginn"] = pd.to_datetime(df_all_members["gr_beginn"])
+            self.min_year = df_all_members["gr_beginn"].dt.year.min()
+            self.max_year = datetime.now().year
+            self.year_options = list(range(self.min_year, self.max_year + 1))
+            self.members = Members(self, df_all_members)
 
-        self.party_options = list(df_all_members["partei_kname"].unique())
-        self.electoral_district_options = list(df_all_members["gr_wahlkreis"].unique())
+            self.party_options = list(df_all_members["partei_kname"].unique())
+            self.electoral_district_options = list(
+                df_all_members["gr_wahlkreis"].unique()
+            )
 
-        df_matters = get_table(100086)
-        self.pol_matters = PolMatters(self, df_matters)
-        self.pol_matters_themes = list(df_matters["thema_1"].unique()) + list(
-            df_matters["thema_2"].unique()
-        )
+            df_matters = get_table(100086)
+            self.pol_matters = PolMatters(self, df_matters)
+            self.pol_matters_themes = list(df_matters["thema_1"].unique()) + list(
+                df_matters["thema_2"].unique()
+            )
 
-        df_bodies = get_table(100308)
-        self.bodies = Bodies(self, df_bodies)
-        self.bodytype_options = list(df_bodies["gremientyp"].unique())
-        df_bodies = df_bodies[["kurzname_gre", "name_gre"]].drop_duplicates().dropna()
-        self.body_options = dict(zip(df_bodies["kurzname_gre"], df_bodies["name_gre"]))
+            df_bodies = get_table(100308)
+            self.bodies = Bodies(self, df_bodies)
+            self.bodytype_options = list(df_bodies["gremientyp"].unique())
+            df_bodies = (
+                df_bodies[["kurzname_gre", "name_gre"]].drop_duplicates().dropna()
+            )
+            self.body_options = dict(
+                zip(df_bodies["kurzname_gre"], df_bodies["name_gre"])
+            )
 
-        party_df = df_all_members[["partei", "partei_kname"]].drop_duplicates().dropna()
-        self.parties = dict(zip(party_df["partei_kname"], party_df["partei"]))
+            party_df = (
+                df_all_members[["partei", "partei_kname"]].drop_duplicates().dropna()
+            )
+            self.parties = dict(zip(party_df["partei_kname"], party_df["partei"]))
 
-        df_memberships = get_table(100308)
-        self.memberships = Memberships(self, df_memberships)
+            df_memberships = get_table(100308)
+            self.memberships = Memberships(self, df_memberships)
+
+            df_documents = get_table(100313)
+            self.documents = Documents(self, df_documents)

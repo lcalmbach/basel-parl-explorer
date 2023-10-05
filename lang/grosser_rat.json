@@ -14,7 +14,7 @@
     "field_value_cols": ["Feld", "Wert"],
     "parliament_members": "Mitglieder des Grossen Rates",
     "matter": "Gesch\u00e4ft",
-    "matter_tabs": ["Gesch\u00e4ft", "Dokument"],
+    "matter_tabs": ["Gesch\u00e4ft", "Dokumente"],
     "in_progress": "In Bearbeitung",
     "closed": "Abgeschlossen",
     "all_info_docs_matter": "Alle Informationen und Dokumente zum Gesch\u00e4ft",
@@ -24,7 +24,11 @@
     "word_cloud": "Wortwolke",
     "pol_initiatives": "Politische Vorst\u00f6sse des Grossen Rats",
     "theme": "Thema",
-    "party": "Partei"
+    "party": "Partei",
+    "loading_data": "Daten werden geladen...",
+    "documents": "Dokumente",
+    "document_tabs":  ["Info", "Wortwolke"],
+    "more_info_pol_matter": "Mehr Informationen zu diesem Geschäft auf https://grosserrat.bs.ch/"
   },
   "de": {
     "info": "Info",
@@ -41,7 +45,7 @@
     "field_value_cols": ["Feld", "Wert"],
     "parliament_members": "Mitglieder des Grossen Rates",
     "matter": "Gesch\u00e4ft",
-    "matter_tabs": ["Gesch\u00e4ft", "Dokument"],
+    "matter_tabs": ["Gesch\u00e4ft", "Dokumente"],
     "in_progress": "In Bearbeitung",
     "closed": "Abgeschlossen",
     "all_info_docs_matter": "Alle Informationen und Dokumente zum Gesch\u00e4ft",
@@ -51,7 +55,11 @@
     "word_cloud": "Wortwolke",
     "pol_initiatives": "Politische Vorst\u00f6sse des Grossen Rats",
     "theme": "Thema",
-    "party": "Partei"
+    "party": "Partei",
+    "loading_data": "Daten werden geladen...",
+    "documents": "Dokumente",
+    "document_tabs":  ["Info", "Wortwolke"],
+    "more_info_pol_matter": "Mehr Informationen zu diesem Geschaeft auf https://grosserrat.bs.ch/"
   },
   "fr": {
     "info": "Info",
@@ -68,7 +76,7 @@
     "field_value_cols": ["Champ", "Valeur"],
     "parliament_members": "Membres du Grand Conseil",
     "matter": "Affaire",
-    "matter_tabs": ["Commerce", "Document"],
+    "matter_tabs": ["Commerce", "Documents"],
     "in_progress": "En cours de traitement",
     "closed": "Termin\u00e9",
     "all_info_docs_matter": "Toutes les informations et documents sur l'entreprise",
@@ -94,7 +102,7 @@
     "field_value_cols": ["Field", "Value"],
     "parliament_members": "Members of the Grand Council",
     "matter": "Matter",
-    "matter_tabs": ["Matter", "Document"],
+    "matter_tabs": ["Matter", "Documents"],
     "in_progress": "In progress",
     "closed": "Completed",
     "all_info_docs_matter": "All information and documents about the selected matter",
@@ -103,6 +111,9 @@
     "text": "Text",
     "word_cloud": "Word cloud",
     "pol_initiatives": "Political initiatives of the Great Council",
-    "party": "Party"
+    "party": "Party",
+    "loading_data": "Loading data..."
+    
+
   }
 }
