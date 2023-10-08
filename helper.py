@@ -1,12 +1,30 @@
 import streamlit as st
 import pandas as pd
 import json
-from io import BytesIO
 import os
 import socket
 import random
 import string
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode, GridUpdateMode
+import fitz
+import requests
+
+
+def read_pdf_from_url(url: str):
+    # Step 1: Download the PDF
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open("temp.pdf", "wb") as f:
+            f.write(response.content)
+            pdf = fitz.open("temp.pdf")
+            text = ""
+            for page_num in range(len(pdf)):
+                page = pdf.load_page(page_num)
+                text += page.get_text()
+            return text
+    else:
+        st.error(f"Failed to download PDF. Status code: {response.status_code}")
+        return "do document found"
 
 
 def show_download_button(df: pd.DataFrame, cfg: dict = {}):
@@ -100,6 +118,7 @@ def show_table(df: pd.DataFrame, cols=[], settings={}):
         fit_columns_on_grid_load=settings["fit_columns_on_grid_load"],
         allow_unsafe_jscode=False,
         enable_enterprise_modules=False,
+        # key=settings["key"],
     )
     selected = grid_response["selected_rows"]
     if selected:

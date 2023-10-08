@@ -1,6 +1,7 @@
-streamlit 
-streamlit_lottie
-streamlit_aggrid
-streamlit_option_menu
-langchain
+streamlit==1.27.2
+streamlit_lottie==0.0.5
+streamlit_aggrid==0.3.4.post3
+streamlit_option_menu==0.3.6
+langchain==0.0.309
 iso639==0.1.4
+PyMuPDF==1.23.4
