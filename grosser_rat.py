@@ -66,7 +66,13 @@ def filter(df: pd.DataFrame, filters: list):
         list:           list of filter objects: eg: {"field": "Year", "operator": "eq", "value": 2020}
     """
     for filter in filters:
-        if filter["operator"] == "eq":
+        # special case referring where a theme must be found in fields thema_1 and thema_2
+        if filter["operator"] == "isin" and type(filter['field'] == list):
+            df = df[
+                (df["thema_1"].isin(filter["value"]))
+                | (df["thema_2"].isin(filter["value"]))
+            ]
+        elif filter["operator"] == "eq":
             df = df[df[filter["field"]] == filter["value"]]
         elif filter["operator"] == "in":
             df = df[df[filter["field"]].isin(filter["value"])]
@@ -76,6 +82,8 @@ def filter(df: pd.DataFrame, filters: list):
             df = df[df[filter["field"]] < filter["value"]]
         elif filter["operator"] == "contains":
             df = df[df[filter["field"]].str.contains(filter["value"], case=False)]
+        elif filter["operator"] == "isin":
+            df = df[df[filter["field"]].isin(filter["value"], case=False)]
     return df
 
 
@@ -219,7 +227,7 @@ class Body:
         with tabs[0]:
             url = self.parent.bodies.url_dict.get(self.short_name)
             if url:
-                st.markdown(f'**[🔗]({url}){self.name}**')
+                st.markdown(f"**[🔗]({url}){self.name}**")
             else:
                 st.markdown(f"**{self.name}**")
 
@@ -233,8 +241,7 @@ class Body:
                     f"{self.current_president['name_adr']} {self.current_president['vorname_adr']} "
                     + partei
                 )
-            
-            
+
             st.markdown(pd.DataFrame(series).to_html(), unsafe_allow_html=True)
         with tabs[1]:
             cols = []
@@ -557,12 +564,8 @@ class Member:
             st.markdown(f"**[🔗]({self.url}){self.full_name}**", unsafe_allow_html=True)
         else:
             st.markdown(f"**{self.full_name}**", unsafe_allow_html=True)
-        
-        tab_labels = lang("member_tabs").copy()
-        # if the member is not active don't show the votation tab 
-        if not (self.is_active_member):
-            del tab_labels[3]
-        tabs = st.tabs(tab_labels)
+
+        tabs = st.tabs(lang("member_tabs"))
         with tabs[0]:
             fields = [
                 "index",
@@ -618,21 +621,23 @@ class Member:
                 ].iloc[0]
                 matter = PolMatter(self.parent, row)
                 matter.show_detail()
-        if len(tabs) >= 4:
-            with tabs[3]:
-                fields = [
-                    "Datum_x",  # from merge
-                    "Geschaeft",
-                    "Typ",
-                    "Abstimmungsnummer",
-                    "Entscheid Mitglied",
-                ]
-                df = self.votations[fields]
-                df.rename(
-                    columns={"Datum_x": "Datum", "Geschaeft": "Geschäft"}, inplace=True
-                )
-                cols = []
+        with tabs[3]:
+            fields = [
+                "Datum_x",  # from merge
+                "Geschaeft",
+                "Typ",
+                "Abstimmungsnummer",
+                "Entscheid Mitglied",
+            ]
+            df = self.votations[fields]
+            df.rename(
+                columns={"Datum_x": "Datum", "Geschaeft": "Geschäft"}, inplace=True
+            )
+            cols = []
+            if len(df) > 0:
                 show_table(df, cols, DEF_GRID_SETTING)
+            else:
+                st.markdown(lang("no_votations"))
 
 
 class Members:
@@ -688,6 +693,7 @@ class Members:
             gender = st.selectbox(lang("gender"), gender_options)
             if gender_options.index(gender) > 0:
                 filters = add_filter(filters, "geschlecht", gender)
+
         return filters
 
     def get_elements(self, df_members):
@@ -815,7 +821,7 @@ class PolMatter:
             df.columns = lang("field_value_cols")
             table = df.to_html(index=False)
             st.markdown(table, unsafe_allow_html=True)
-            st.write()
+            st.write("")
             st.link_button(
                 lang("matter"), self.url_matter, help=lang("more_info_pol_matter")
             )
@@ -831,7 +837,13 @@ class PolMatters:
         self.parent = parent
         self.all_elements = self.get_elements(df)
         self.first_year = self.all_elements["beginn_datum"].dt.year.min()
+        self.theme_options = self.get_themes(self.all_elements)
 
+    def get_themes(self, df: pd.DataFrame)->list:
+        concat_list = list(df["thema_1"].unique()) + list(df["thema_2"].unique())
+        concat_list = [x for x in concat_list if x is not np.nan]
+        return sorted(concat_list)
+        
     def get_filter(self):
         """Returns a list of filters to be applied on the members
 
@@ -861,6 +873,15 @@ class PolMatters:
             party = st.selectbox(lang("party"), options=party_options)
             if party_options.index(party) > 0:
                 filters = add_filter(filters, "partei", party)
+
+            # theme
+            themes = st.multiselect(
+                lang("theme"),
+                self.theme_options,
+                help="Selektiere ein oder mehrere Themen",
+            )
+            if len(themes) > 0:
+                filters = add_filter(filters, ["thema_1", "thema_1"], themes, "isin")
 
             # Status
             status_options = [lang("all"), lang("in_progress"), lang("closed")]
@@ -1006,7 +1027,7 @@ class Parliament:
             text.write(lang("loading_committees"))
             df_memberships = get_table(Urls.MEMBERSHIPS.value)
             self.memberships = Memberships(self, df_memberships)
-            
+
             # holds urls from grosserrat.bs.ch for active committees
             df_url_bodies = pd.read_csv("./committee_url.csv", sep=";")
             self.bodies = Bodies(self, df_memberships, df_url_bodies)
@@ -1017,7 +1038,7 @@ class Parliament:
             self.body_options = dict(
                 zip(df_bodies["kurzname_gre"], df_bodies["name_gre"])
             )
-            
+
             party_df = (
                 df_all_members[["partei", "partei_kname"]].drop_duplicates().dropna()
             )
