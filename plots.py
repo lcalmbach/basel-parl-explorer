@@ -37,7 +37,7 @@ def line_chart(df, settings):
                 y=alt.Y(
                     f"{settings['y']}:{settings['y_dt']}",
                     scale=alt.Scale(domain=settings["y_domain"]),
-                    axis=alt.Axis(title=settings["y_title"])
+                    axis=alt.Axis(title=settings["y_title"]),
                 ),
                 color=color,
                 tooltip=settings["tooltip"],

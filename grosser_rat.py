@@ -246,16 +246,10 @@ class Body:
             st.markdown(pd.DataFrame(series).to_html(), unsafe_allow_html=True)
         with tabs[1]:
             cols = []
-            settings = {
-                "fit_columns_on_grid_load": False,
-                "height": 400,
-                "selection_mode": "single",
-                "field": randomword(10),
-            }
             st.markdown(
                 f"**{lang('committee_members')} {self.name}: {len(self.members)}**"
             )
-            show_table(self.members, cols, settings)
+            show_table(self.members, cols, DEF_GRID_SETTING)
 
 
 class Bodies:
@@ -587,42 +581,37 @@ class Votations:
                 ):
                     st.experimental_rerun()
 
-        grouping_options = lang("votations_groupings")
         with st.sidebar:
-            sel_grouping = st.selectbox(
-                label=lang("grouping"), options=grouping_options
-            )
             df_fract_members = get_members_per_fraction()
-            if grouping_options.index(sel_grouping) == 0:
-                group_fields = ["Jahr", "Fraktion"]
-                df = self.results[
-                    self.results["Entscheid Mitglied"] == self.settings_typ0["result"]
-                ]
+            group_fields = ["Jahr", "Fraktion"]
+            df = self.results[
+                self.results["Entscheid Mitglied"] == self.settings_typ0["result"]
+            ]
 
-                if len(self.settings_typ0["groups"]) > 0:
-                    df = df[df["Fraktion"].isin(self.settings_typ0["groups"])]
-                df = (
-                    df[group_fields]
-                    .groupby(group_fields)
-                    .size()
-                    .reset_index(name="Count")
-                )
-                df = df.merge(df_fract_members, on=["Jahr", "Fraktion"])
-                df["cnt_p_member"] = df["Count"] / df["Members"]
-                self.settings_typ0["color"] = "Fraktion"
-                self.settings_typ0[
-                    "title"
-                ] = f"{title_dict[self.settings_typ0['result']]} {lang('per_member_and_fraction')}"
-            self.settings_typ0["y_domain"] = [
-                df["cnt_p_member"].min(),
-                df["cnt_p_member"].max(),
-            ]
-            self.settings_typ0["x_domain"] = [df["Jahr"].min(), df["Jahr"].max()]
-            self.settings_typ0["tooltip"] = [
-                self.settings_typ0["x"],
-                self.settings_typ0["y"],
-                self.settings_typ0["color"],
-            ]
+            if len(self.settings_typ0["groups"]) > 0:
+                df = df[df["Fraktion"].isin(self.settings_typ0["groups"])]
+            df = (
+                df[group_fields]
+                .groupby(group_fields)
+                .size()
+                .reset_index(name="Count")
+            )
+            df = df.merge(df_fract_members, on=["Jahr", "Fraktion"])
+            df["cnt_p_member"] = df["Count"] / df["Members"]
+            self.settings_typ0["color"] = "Fraktion"
+            self.settings_typ0[
+                "title"
+            ] = f"{title_dict[self.settings_typ0['result']]} {lang('per_member_and_fraction')}"
+        self.settings_typ0["y_domain"] = [
+            df["cnt_p_member"].min(),
+            df["cnt_p_member"].max(),
+        ]
+        self.settings_typ0["x_domain"] = [df["Jahr"].min(), df["Jahr"].max()]
+        self.settings_typ0["tooltip"] = [
+            self.settings_typ0["x"],
+            self.settings_typ0["y"],
+            self.settings_typ0["color"],
+        ]
 
         tabs = st.tabs([lang("graph"), lang("settings")])
 
@@ -630,7 +619,9 @@ class Votations:
             show_settings()
         with tabs[0]:
             line_chart(df, self.settings_typ0)
-            st.write(lang("figure0_legend").format(title_dict[self.settings_typ0['result']]))
+            st.write(
+                lang("figure0_legend").format(title_dict[self.settings_typ0["result"]])
+            )
 
 
 class Member:
@@ -1083,17 +1074,11 @@ class Memberships:
             "uni_nr_gre",
             "uni_nr_adr",
         ]
-        settings = {
-            "fit_columns_on_grid_load": False,
-            "height": 400,
-            "selection_mode": "single",
-            "field": randomword(10),
-        }
         cols = []
         st.subheader(
             f"{lang('committee_members')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
-        sel_member = show_table(self.filtered_elements[fields], cols, settings)
+        sel_member = show_table(self.filtered_elements[fields], cols, DEF_GRID_SETTING)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("uni_nr_gre").loc[
                 sel_member["uni_nr_gre"]
