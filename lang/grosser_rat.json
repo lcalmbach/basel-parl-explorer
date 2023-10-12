@@ -61,7 +61,18 @@
     "rejected": "Abgelehnt",
     "result": "Resultat",
     "status": "Status",
-    "no_votations": "Abstimmungen können nur für aktuell amtierende Mitglieder angezeigt werden."
+    "no_votations": "Abstimmungen können nur für aktuell amtierende Mitglieder angezeigt werden.",
+    "figures_menu": ["Abstimmungen"],
+    "figures_label": "Graphische Auswertungen",
+    "votations_groupings":["nach Fraktion", "nach Geschlecht", "nach Alter"],
+    "decision": "Entscheid",
+    "absence": "Absenz",
+    "graph": "Grafik",
+    "settings": "Einstellungen",
+    "pol_groups": "Fraktionen",
+    "grouping": "Gruppierung",
+    "per_member_and_fraction": "pro Fraktion und Mitglied",
+    "figure0_legend": "Das Total der {} jeder Fraktion wird durch die Anzahl Sitze der Fraktion im entsprechenden Jahr geteilt."
   },
   "de": {
     "info": "Info",
@@ -125,7 +136,18 @@
     "rejected": "Abgelehnt",
     "result": "Resultat",
     "status": "Status",
-    "no_votations": "Abstimmungen k\u00f6nnen nur für aktuell amtierende Mitglieder angezeigt werden."
+    "no_votations": "Abstimmungen können nur für aktuell amtierende Mitglieder angezeigt werden.",
+    "figures_menu": ["Abstimmungen"],
+    "figures_label": "Graphische Auswertungen",
+    "votations_groupings":["nach Fraktion", "nach Geschlecht", "nach Alter"],
+    "decision": "Entscheid",
+    "absence": "Absenz",
+    "graph": "Grafik",
+    "settings": "Einstellungen",
+    "pol_groups": "Fraktionen",
+    "grouping": "Gruppierung",
+    "per_member_and_fraction": "pro Fraktion und Mitglied",
+    "figure0_legend": "Das Total der {} jeder Fraktion wird durch die Anzahl Sitze der Fraktion im entsprechenden Jahr geteilt."
   },
   "fr": {
     "info": "Info",

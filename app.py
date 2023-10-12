@@ -7,10 +7,10 @@ from streamlit_option_menu import option_menu
 from lang import get_used_languages, init_lang_dict_complete, get_lang
 from grosser_rat import Parliament
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __author__ = "Lukas Calmbach"
 __author_email__ = "lcalmbach@gmail.com"
-VERSION_DATE = "2023-10-08"
+VERSION_DATE = "2023-10-12"
 APP_EMOJI = "🏛️"
 APP_NAME = f"BaselParlExplorer"
 GIT_REPO = ""
@@ -168,7 +168,14 @@ def main() -> None:
         menu_action = option_menu(
             None,
             menu_options,
-            icons=["info-square", "people-fill", "collection-fill", "list", "hammer"],
+            icons=[
+                "info-square",
+                "people-fill",
+                "collection-fill",
+                "list",
+                "hammer",
+                "graph-up",
+            ],
             menu_icon="cast",
             default_index=0,
         )
@@ -183,6 +190,8 @@ def main() -> None:
         st.session_state.grosser_rat.pol_matters.select_item()
     elif menu_action == menu_options[4]:
         st.session_state.grosser_rat.votations.select_item()
+    elif menu_action == menu_options[5]:
+        st.session_state.grosser_rat.select_plot()
     display_language_selection()
 
     st.sidebar.markdown(get_impressum(), unsafe_allow_html=True)

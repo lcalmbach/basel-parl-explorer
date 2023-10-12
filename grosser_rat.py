@@ -4,8 +4,9 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from lang import get_lang
-from helper import show_table, randomword
+from helper import show_table
 from enum import Enum, auto
+from plots import time_series_line, line_chart
 
 
 PAGE = __name__
@@ -67,7 +68,7 @@ def filter(df: pd.DataFrame, filters: list):
     """
     for filter in filters:
         # special case referring where a theme must be found in fields thema_1 and thema_2
-        if filter["operator"] == "isin" and type(filter['field'] == list):
+        if filter["operator"] == "isin" and type(filter["field"] == list):
             df = df[
                 (df["thema_1"].isin(filter["value"]))
                 | (df["thema_2"].isin(filter["value"]))
@@ -405,6 +406,19 @@ class Votations:
 
         self.all_elements = self.get_elements(df_matters)
         self.filtered_elements = pd.DataFrame()
+        # results by fraction and restult type
+        self.settings_typ0 = {
+            "x": "Jahr",
+            "x_title": lang("year"),
+            # "x_dt": "O", # does not work, why?
+            "y": "cnt_p_member",
+            "y_title": "Anzahl pro Mitglied",
+            "tooltip": ["Jahr", "cnt_p_member"],
+            "width": 800,
+            "height": 600,
+            "groups": ["SP", "SVP", "FDP", "LDP", "GLP"],
+            "result": "J",
+        }
 
     def get_filter(self):
         """Returns a list of filters to be applied on the members
@@ -528,6 +542,95 @@ class Votations:
             ].iloc[0]
             self.current_body = Votation(self.parent, row, sel_member["id"])
             self.current_body.show_detail()
+
+    def show_plot(self):
+        title_dict = {
+            "J": lang("no_yeas"),
+            "N": lang("no_nays"),
+            "E": lang("no_abstentions"),
+            "P": lang("no_presidium_votes"),
+            "A": lang("absences"),
+        }
+
+        def get_members_per_fraction():
+            df = self.results[["Jahr", "Fraktion", "Sitz Nr."]].drop_duplicates()
+            df = (
+                df[["Jahr", "Fraktion"]]
+                .groupby(["Jahr", "Fraktion"])
+                .size()
+                .reset_index(name="Members")
+            )
+            return df
+
+        def show_settings():
+            cols = st.columns(2)
+            old_groups, old_result = (
+                self.settings_typ0["groups"],
+                self.settings_typ0["result"],
+            )
+            with cols[0]:
+                group_options = self.results["Fraktion"].unique()
+                self.settings_typ0["groups"] = st.multiselect(
+                    label=lang("pol_groups"),
+                    options=group_options,
+                    default=self.settings_typ0["groups"],
+                )
+                result_options = list(self.results["Entscheid Mitglied"].unique())
+                self.settings_typ0["result"] = st.selectbox(
+                    label=f"{lang('decision')}/{lang('absence')}",
+                    options=result_options,
+                    index=result_options.index(self.settings_typ0["result"]),
+                )
+                # if there are changes, rerun the app
+                if (old_groups != self.settings_typ0["groups"]) | (
+                    old_result != self.settings_typ0["result"]
+                ):
+                    st.experimental_rerun()
+
+        grouping_options = lang("votations_groupings")
+        with st.sidebar:
+            sel_grouping = st.selectbox(
+                label=lang("grouping"), options=grouping_options
+            )
+            df_fract_members = get_members_per_fraction()
+            if grouping_options.index(sel_grouping) == 0:
+                group_fields = ["Jahr", "Fraktion"]
+                df = self.results[
+                    self.results["Entscheid Mitglied"] == self.settings_typ0["result"]
+                ]
+
+                if len(self.settings_typ0["groups"]) > 0:
+                    df = df[df["Fraktion"].isin(self.settings_typ0["groups"])]
+                df = (
+                    df[group_fields]
+                    .groupby(group_fields)
+                    .size()
+                    .reset_index(name="Count")
+                )
+                df = df.merge(df_fract_members, on=["Jahr", "Fraktion"])
+                df["cnt_p_member"] = df["Count"] / df["Members"]
+                self.settings_typ0["color"] = "Fraktion"
+                self.settings_typ0[
+                    "title"
+                ] = f"{title_dict[self.settings_typ0['result']]} {lang('per_member_and_fraction')}"
+            self.settings_typ0["y_domain"] = [
+                df["cnt_p_member"].min(),
+                df["cnt_p_member"].max(),
+            ]
+            self.settings_typ0["x_domain"] = [df["Jahr"].min(), df["Jahr"].max()]
+            self.settings_typ0["tooltip"] = [
+                self.settings_typ0["x"],
+                self.settings_typ0["y"],
+                self.settings_typ0["color"],
+            ]
+
+        tabs = st.tabs([lang("graph"), lang("settings")])
+
+        with tabs[1]:
+            show_settings()
+        with tabs[0]:
+            line_chart(df, self.settings_typ0)
+            st.write(lang("figure0_legend").format(title_dict[self.settings_typ0['result']]))
 
 
 class Member:
@@ -839,11 +942,11 @@ class PolMatters:
         self.first_year = self.all_elements["beginn_datum"].dt.year.min()
         self.theme_options = self.get_themes(self.all_elements)
 
-    def get_themes(self, df: pd.DataFrame)->list:
+    def get_themes(self, df: pd.DataFrame) -> list:
         concat_list = list(df["thema_1"].unique()) + list(df["thema_2"].unique())
         concat_list = [x for x in concat_list if x is not np.nan]
         return sorted(concat_list)
-        
+
     def get_filter(self):
         """Returns a list of filters to be applied on the members
 
@@ -1001,6 +1104,14 @@ class Memberships:
 
 
 class Parliament:
+    def select_plot(self):
+        plot_options = lang("figures_menu")
+        selected_plot = st.sidebar.selectbox(
+            label=lang("figures_label"), options=plot_options
+        )
+        if plot_options.index(selected_plot) == 0:
+            self.votations.show_plot()
+
     def __init__(self):
         with st.spinner(lang("loading_data")):
             text = st.empty()

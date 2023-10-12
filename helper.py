@@ -127,9 +127,32 @@ def show_table(df: pd.DataFrame, cols=[], settings={}):
         return []
 
 
-def randomword(length: int):
+def random_word(length: int):
+    """
+    Generate a random string of lowercase letters with a given length.
+
+    Args:
+        length (int): The length of the random string to generate.
+
+    Returns:
+        str: A random string of lowercase letters with the given length.
+    """
     letters = string.ascii_lowercase
     return "".join(random.choice(letters) for i in range(length))
+
+
+def round_to_nearest(value, base):
+    """
+    Rounds the given value to the nearest multiple of the given base.
+
+    Args:
+        value (int): The value to be rounded.
+        base (int): The base to which the value should be rounded.
+
+    Returns:
+        int: The rounded value.
+    """
+    return int(value / base / base) * base
 
 
 LOCAL_HOST = "liestal"
