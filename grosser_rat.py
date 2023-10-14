@@ -18,6 +18,7 @@ DEF_GRID_SETTING = {
 }
 
 
+# dataset key in data.bs.ch ogd portal
 class Urls(Enum):
     MEMBERS_ALL = 100307
     INITIATIVES = 100086
@@ -401,7 +402,7 @@ class Votations:
         self.all_elements = self.get_elements(df_matters)
         self.filtered_elements = pd.DataFrame()
         # results by fraction and restult type
-        self.settings_typ0 = {
+        self.settings_plot = {
             "x": "Jahr",
             "x_title": lang("year"),
             # "x_dt": "O", # does not work, why?
@@ -542,8 +543,15 @@ class Votations:
             "J": lang("no_yeas"),
             "N": lang("no_nays"),
             "E": lang("no_abstentions"),
-            "P": lang("no_presidium_votes"),
             "A": lang("absences"),
+            "P": lang("no_presidium_votes"),
+        }
+        results_dict = {
+            "J": lang("yeas"),
+            "N": lang("nays"),
+            "E": lang("abstentions"),
+            "A": lang("absences"),
+            "P": lang("presidium_votes"),
         }
 
         def get_members_per_fraction():
@@ -559,25 +567,26 @@ class Votations:
         def show_settings():
             cols = st.columns(2)
             old_groups, old_result = (
-                self.settings_typ0["groups"],
-                self.settings_typ0["result"],
+                self.settings_plot["groups"],
+                self.settings_plot["result"],
             )
             with cols[0]:
                 group_options = self.results["Fraktion"].unique()
-                self.settings_typ0["groups"] = st.multiselect(
+                self.settings_plot["groups"] = st.multiselect(
                     label=lang("pol_groups"),
                     options=group_options,
-                    default=self.settings_typ0["groups"],
+                    default=self.settings_plot["groups"],
                 )
-                result_options = list(self.results["Entscheid Mitglied"].unique())
-                self.settings_typ0["result"] = st.selectbox(
+                result_options = list(results_dict.keys())
+                self.settings_plot["result"] = st.selectbox(
                     label=f"{lang('decision')}/{lang('absence')}",
                     options=result_options,
-                    index=result_options.index(self.settings_typ0["result"]),
+                    format_func=lambda x: results_dict[x],
+                    index=result_options.index(self.settings_plot["result"]),
                 )
                 # if there are changes, rerun the app
-                if (old_groups != self.settings_typ0["groups"]) | (
-                    old_result != self.settings_typ0["result"]
+                if (old_groups != self.settings_plot["groups"]) | (
+                    old_result != self.settings_plot["result"]
                 ):
                     st.experimental_rerun()
 
@@ -585,32 +594,27 @@ class Votations:
             df_fract_members = get_members_per_fraction()
             group_fields = ["Jahr", "Fraktion"]
             df = self.results[
-                self.results["Entscheid Mitglied"] == self.settings_typ0["result"]
+                self.results["Entscheid Mitglied"] == self.settings_plot["result"]
             ]
 
-            if len(self.settings_typ0["groups"]) > 0:
-                df = df[df["Fraktion"].isin(self.settings_typ0["groups"])]
-            df = (
-                df[group_fields]
-                .groupby(group_fields)
-                .size()
-                .reset_index(name="Count")
-            )
+            if len(self.settings_plot["groups"]) > 0:
+                df = df[df["Fraktion"].isin(self.settings_plot["groups"])]
+            df = df[group_fields].groupby(group_fields).size().reset_index(name="Count")
             df = df.merge(df_fract_members, on=["Jahr", "Fraktion"])
             df["cnt_p_member"] = df["Count"] / df["Members"]
-            self.settings_typ0["color"] = "Fraktion"
-            self.settings_typ0[
+            self.settings_plot["color"] = "Fraktion"
+            self.settings_plot[
                 "title"
-            ] = f"{title_dict[self.settings_typ0['result']]} {lang('per_member_and_fraction')}"
-        self.settings_typ0["y_domain"] = [
+            ] = f"{title_dict[self.settings_plot['result']]} {lang('per_member_and_fraction')}"
+        self.settings_plot["y_domain"] = [
             df["cnt_p_member"].min(),
             df["cnt_p_member"].max(),
         ]
-        self.settings_typ0["x_domain"] = [df["Jahr"].min(), df["Jahr"].max()]
-        self.settings_typ0["tooltip"] = [
-            self.settings_typ0["x"],
-            self.settings_typ0["y"],
-            self.settings_typ0["color"],
+        self.settings_plot["x_domain"] = [df["Jahr"].min(), df["Jahr"].max()]
+        self.settings_plot["tooltip"] = [
+            self.settings_plot["x"],
+            self.settings_plot["y"],
+            self.settings_plot["color"],
         ]
 
         tabs = st.tabs([lang("graph"), lang("settings")])
@@ -618,9 +622,9 @@ class Votations:
         with tabs[1]:
             show_settings()
         with tabs[0]:
-            line_chart(df, self.settings_typ0)
+            line_chart(df, self.settings_plot)
             st.write(
-                lang("figure0_legend").format(title_dict[self.settings_typ0["result"]])
+                lang("figure0_legend").format(title_dict[self.settings_plot["result"]])
             )
 
 
@@ -932,13 +936,25 @@ class PolMatters:
         self.all_elements = self.get_elements(df)
         self.first_year = self.all_elements["beginn_datum"].dt.year.min()
         self.theme_options = self.get_themes(self.all_elements)
+        self.settings_plot = {
+            "x": "jahr",
+            "x_title": lang("year"),
+            # "x_dt": "O", # does not work, why?
+            "y": "count",
+            "y_title": "Anzahl Vorstösse pro Thema",
+            "width": 800,
+            "height": 600,
+            "themes": [],
+            "color": None,
+        }
 
     def get_themes(self, df: pd.DataFrame) -> list:
         concat_list = list(df["thema_1"].unique()) + list(df["thema_2"].unique())
         concat_list = [x for x in concat_list if x is not np.nan]
+        concat_list = list(set(concat_list))
         return sorted(concat_list)
 
-    def get_filter(self):
+    def get_filter(self, excluded_list: list = []):
         """Returns a list of filters to be applied on the members
 
         Args:
@@ -952,38 +968,44 @@ class PolMatters:
         filters = []
         with st.sidebar.expander(f"🔎{lang('filter')}", expanded=True):
             # political body name
-            name = st.text_input(lang("matter"))
-            if name > "":
-                filters = add_filter(filters, "titel", name, "contains")
-
+            if "matter_title" not in excluded_list:
+                name = st.text_input(lang("matter"))
+                if name > "":
+                    filters = add_filter(filters, "titel", name, "contains")
+            
             # year
-            year_options = [lang("year")] + self.parent.year_options
-            year = st.selectbox(lang("committee_type"), options=year_options)
-            if year_options.index(year) > 0:
-                filters = add_filter(filters, "jahr", year)
+            if "year" not in excluded_list:    
+                year_options = [lang("year")] + self.parent.year_options
+                year = st.selectbox(lang("committee_type"), options=year_options)
+                if year_options.index(year) > 0:
+                    filters = add_filter(filters, "jahr", year)
 
             # political party
-            party_options = [lang("all")] + self.parent.party_options
-            party = st.selectbox(lang("party"), options=party_options)
-            if party_options.index(party) > 0:
-                filters = add_filter(filters, "partei", party)
+            if "party" not in excluded_list:
+                party_options = [lang("all")] + self.parent.party_options
+                party = st.selectbox(lang("party"), options=party_options)
+                if party_options.index(party) > 0:
+                    filters = add_filter(filters, "partei", party)
 
             # theme
-            themes = st.multiselect(
-                lang("theme"),
-                self.theme_options,
-                help="Selektiere ein oder mehrere Themen",
-            )
-            if len(themes) > 0:
-                filters = add_filter(filters, ["thema_1", "thema_1"], themes, "isin")
+            if "theme" not in excluded_list:
+                themes = st.multiselect(
+                    lang("theme"),
+                    self.theme_options,
+                    help="Selektiere ein oder mehrere Themen"
+                )
+                self.settings_plot["themes"] = themes
+                if len(themes) > 0:
+                    filters = add_filter(filters, ["thema_1", "thema_2"], themes, "isin")
 
             # Status
-            status_options = [lang("all"), lang("in_progress"), lang("closed")]
-            status = st.selectbox(lang("status"), options=status_options)
-            if status_options.index(status) == 1:
-                filters = add_filter(filters, "status", "B")
-            elif status_options.index(status) == 2:
-                filters = add_filter(filters, "status", "A")
+            if "status" not in excluded_list:
+                status_options = [lang("all"), lang("in_progress"), lang("closed")]
+                status = st.selectbox(lang("status"), options=status_options)
+                if status_options.index(status) == 1:
+                    filters = add_filter(filters, "status", "B")
+                elif status_options.index(status) == 2:
+                    filters = add_filter(filters, "status", "A")
 
         return filters
 
@@ -991,7 +1013,7 @@ class PolMatters:
         df_urls = pd.read_csv("./matter_url.csv", sep=";")
         df = df.merge(df_urls, on="signatur", how="left")
         df["beginn_datum"] = pd.to_datetime(df["beginn_datum"])
-        df["jahr"] = df["beginn_datum"].dt.year
+        df["jahr"] = df["beginn_datum"].dt.year.astype(int)
         return df
 
     def select_item(self):
@@ -1023,12 +1045,76 @@ class PolMatters:
             pol_matter = PolMatter(self.parent, row, sel_member["signatur"])
             pol_matter.show_detail()
 
-    def filter(self, filters):
-        for filter in filters:
-            df = self.all_elements[
-                self.all_elements[filter["field"]] == filter["value"]
+    def show_plot(self):
+        def show_settings():
+            cols = st.columns(2)
+            with cols[0]:
+                grouping_options = lang("figure1_grouping_options")
+                self.settings_plot["groupby"] = st.selectbox(
+                    label="Gruppierung",
+                    options=grouping_options
+                )
+                if grouping_options.index(self.settings_plot["groupby"]) == 0:
+                    self.settings_plot["color"] = None
+                elif grouping_options.index(self.settings_plot["groupby"]) == 1:
+                    self.settings_plot["color"] = 'thema_1'
+                else:
+                    self.settings_plot["color"] = 'partei'
+
+        def handle_groupby_none(df: pd.DataFrame):
+            df.loc[:, 'count'] = 1
+            df_count = df[["jahr", 'count']].groupby(["jahr"]).sum().reset_index()
+            self.settings_plot["y"] = "count"
+            self.settings_plot["fig_legend"] = lang("figure1_legend_groupby_none")
+            return df_count
+
+        def handle_groupby_theme(df: pd.DataFrame):
+            df = df[["jahr", "thema_1", "thema_2"]].copy()
+            df["weight"] = df.apply(lambda row: 0.5 if row["thema_2"] else 1, axis=1)
+            df_theme2 = df[["jahr", "thema_2", "weight"]].copy().dropna()
+            df_theme2.columns = ["jahr", "thema_1", "weight"]
+            df = pd.concat([df, df_theme2], ignore_index=True)
+            # if a filte ris set on the theme, we need to filter again since in the original filter
+            # all matters are found where 1 of the theme fields matches the theme.
+            if len(self.settings_plot["themes"]) > 0:
+                df = df[df["thema_1"].isin(self.settings_plot["themes"])]
+            df = df.groupby(["jahr", "thema_1"])["weight"].sum().reset_index()
+            self.settings_plot["title"] = "Anzahl Vorstösse pro Jahr nach Thema"
+            self.settings_plot["fig_legend"] = lang("figure1_legend_groupby_theme")
+            self.settings_plot["y"] = "weight"
+            return df
+
+        def handle_groupby_party(df: pd.DataFrame):
+            df.loc[:, 'count'] = 1
+            fields = ["jahr", "partei", "count"]
+            df = df[fields].groupby(["jahr", "partei"]).sum().reset_index()
+            self.settings_plot["y"] = "count"
+            self.settings_plot["fig_legend"] = lang("figure0_legend_groupby_party")
+            return df
+
+        show_settings()
+        filters = self.get_filter(excluded_list=['matter_title', 'year', 'status'])
+        df = filter(self.all_elements, filters)
+        if self.settings_plot["color"] is None:
+            df = handle_groupby_none(df)
+        elif self.settings_plot["color"] == "thema_1":
+            df = handle_groupby_theme(df)
+        elif self.settings_plot["color"] == "partei":
+            df = handle_groupby_party(df)
+
+        self.settings_plot["y_domain"] = [
+                0, df[self.settings_plot["y"]].max()
             ]
-        return df
+        self.settings_plot["x_domain"] = [df["jahr"].min(), df["jahr"].max()]
+        self.settings_plot["tooltip"] = [
+            self.settings_plot["x"],
+            self.settings_plot["y"],
+        ]
+        if self.settings_plot["color"] is not None:
+            self.settings_plot["tooltip"].append(self.settings_plot["color"])
+        self.settings_plot["title"] = f"{lang('figure0_title')} {self.settings_plot['groupby']}"
+        line_chart(df, self.settings_plot)
+        st.write(self.settings_plot["fig_legend"])
 
 
 class Membership:
@@ -1096,6 +1182,8 @@ class Parliament:
         )
         if plot_options.index(selected_plot) == 0:
             self.votations.show_plot()
+        elif plot_options.index(selected_plot) == 1:
+            self.pol_matters.show_plot()
 
     def __init__(self):
         with st.spinner(lang("loading_data")):

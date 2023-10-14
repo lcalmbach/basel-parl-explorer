@@ -32,7 +32,7 @@ def line_chart(df, settings):
                 x=alt.X(
                     f"{settings['x']}:{settings['x_dt']}",
                     scale=alt.Scale(domain=settings["x_domain"]),
-                    axis=alt.Axis(format=("N")),
+                    axis=alt.Axis(format=(".0f")),
                 ),
                 y=alt.Y(
                     f"{settings['y']}:{settings['y_dt']}",
@@ -51,6 +51,7 @@ def line_chart(df, settings):
                 x=alt.X(
                     f"{settings['x']}:{settings['x_dt']}",
                     scale=alt.Scale(domain=settings["x_domain"]),
+                    axis=alt.Axis(format=(".0f")),
                 ),
                 y=alt.Y(
                     f"{settings['y']}:{settings['y_dt']}",
