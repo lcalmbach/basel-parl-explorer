@@ -647,7 +647,13 @@ class Member:
         self.full_name = f"{self.first_name} {self.name}"
         self.pol_matters = filter(
             self.parent.pol_matters.all_elements,
-            [{"field": "urheber", "operator": "eq", "value": f"{self.name}, {self.first_name}"}],
+            [
+                {
+                    "field": "urheber",
+                    "operator": "eq",
+                    "value": f"{self.name}, {self.first_name}",
+                }
+            ],
         )
         self.memberships = self.parent.memberships.filter(
             [{"field": "uni_nr_adr", "value": self.uni_nr}]
@@ -757,22 +763,36 @@ class Parties:
             "height": 1000,
             "color": "Partei",
             "color_scheme": {
+                "PdA, KP": "darkred",
                 "GB, FraB, POB": "green",
                 "SP": "red",
                 "GLP": "lightgreen",
                 "EVP, VEW": "yellow",
                 "CVP, KVP": "orange",
                 "LDP, LP": "darkblue",
+                "LdU": "darkorange",
                 "FDP, RDP": "blue",
                 "SVP, BGP": "darkgreen",
                 "VA, SD, UVP, NA": "brown",
-                "PdA, KP": "blue",
-                "LdU": "grey",
-                "DSP": "grey",
+                "DSP": "pink",
                 "Andere": "grey",
             },
-            "bar_width": 20,
+            "bar_width": 18,
             "tooltip": ["Jahr", "Partei", lang("seats")],
+        }
+        self.party_url_dict = {
+            "AB": "https://https://www.aktivesbettingen.ch/",
+            "BastA!": "https://basta-bs.ch/",
+            "EVP": "https://www.evp-bs.ch/",
+            "SP": "https://www.sp-bs.ch/",
+            "LDP": "https://ldp.ch/",
+            "SVP": "https://www.svp-basel.ch/",
+            "GLP": "https://bs.grunliberale.ch/",
+            "FDP": "https://www.fdp-bs.ch/",
+            "Grüne": " https://gruene-bs.ch/",
+            "Mitte": " https://bs.die-mitte.ch/",
+            "jgb": "https://www.jungesgruenesbuendnis.ch/",
+            "VA": "http://www.ericweber.net/de/?id=startseite",
         }
         # make sure the parties appear in the right order,
         # see: https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt)
@@ -813,15 +833,41 @@ class Parties:
         ...
 
     def show_plot(self):
-        # filters = self.get_filter(excluded_list=["matter_title", "year", "status"])
-        df = self.all_elements
+        party_sort = {
+            "PdA, KP": 1,
+            "GB, FraB, POB": 2,
+            "SP": 3,
+            "DSP": 4,
+            "GLP": 5,
+            "EVP, VEW": 6,
+            "CVP, KVP": 7,
+            "LDP, LP": 8,
+            "LdU": 9,
+            "FDP, RDP": 10,
+            "SVP, BGP": 11,
+            "VA, SD, UVP, NA": 12,
+            "Andere": 13,
+        }
+
+        df = self.all_elements.copy()
+        df["sort_key"] = df["Partei"].map(party_sort)
+        options_show_parties = [lang("seats"), lang("percent_seats")]
+        with st.columns(2)[0]:
+            show_pct = st.selectbox("Darstellung", options_show_parties)
+        if options_show_parties.index(show_pct) == 1:
+            mask = df["Jahr"] < 2008
+            df.loc[mask, lang("seats")] = (df.loc[mask, lang("seats")] / 130) * 100
+            df.loc[mask, lang("seats")] = df.loc[mask, lang("seats")].round(2)
+            self.settings_plot["x_title"] = lang("percent_seats")
+            self.settings_plot["x_domain"] = [0, 100]
+
         bar_chart(df, self.settings_plot)
         st.markdown(lang("seat_distribution_legend"))
-        st.markdown(f"{lang('parties')}:")
+        st.markdown(f"*{lang('parties')}*:")
         text = ""
         parties = sorted(list(self.parent.parties_dict.keys()))
         for party in parties:
-            text += f"- {party}: {self.parent.parties_dict[party]}\n"
+            text += f"- [{party}]({self.party_url_dict[party]}): {self.parent.parties_dict[party]}\n"
         st.markdown(text)
 
 

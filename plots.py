@@ -335,19 +335,23 @@ def bar_chart(df: pd.DataFrame, settings: dict):
         x_axis = alt.X(f"{settings['x']}:{settings['x_dt']}")
     if "x_domain" in settings:
         x_axis.axis.scale = alt.Scale(domain=settings["x_domain"])
-    y_axis = alt.Y(f"{settings['y']}:{settings['y_dt']}", title=settings["y_title"])
+    y_axis = alt.Y(
+        f"{settings['y']}:{settings['y_dt']}",
+        title=settings["y_title"],
+        sort="descending",
+    )
     if "y_domain" in settings:
         y_axis.axis.scale = alt.Scale(domain=settings["y_domain"])
 
     if "color_scheme" in settings:
         color_scheme = settings["color_scheme"]
-        # not solved yet, see: https://stackoverflow.com/questions/66347857/sort-a-normalized-stacked-bar-chart-with-altair
         color = alt.Color(
             f"{settings['color']}:N",
             scale=alt.Scale(
-                domain=list(color_scheme.keys()), range=list(color_scheme.values())
+                domain=list(color_scheme.keys()),
+                range=list(color_scheme.values()),
             ),
-            sort=settings["x_sort"],
+            sort=alt.EncodingSortField("sort_key"),
         )
     else:
         color = settings["color"]
@@ -355,7 +359,13 @@ def bar_chart(df: pd.DataFrame, settings: dict):
     plot = (
         alt.Chart(df)
         .mark_bar(size=settings["bar_width"])
-        .encode(x=x_axis, y=y_axis, color=color, tooltip=settings["tooltip"])
+        .encode(
+            x=x_axis,
+            y=y_axis,
+            color=color,
+            order=alt.Order("sort_key"),
+            tooltip=settings["tooltip"],
+        )
     )
     if "h_line" in settings:
         plot += (
