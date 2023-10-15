@@ -8,14 +8,29 @@ from helper import round_to_nearest
 
 def line_chart(df, settings):
     title = settings["title"] if "title" in settings else ""
-    settings["opacity"] = 1
     if "x_dt" not in settings:
         settings["x_dt"] = "Q"
     if "y_dt" not in settings:
         settings["y_dt"] = "Q"
     if not ("opacity" in settings):
         settings["opacity"] = 1
-
+    st.write(df.dtypes)
+    y_axis = alt.Y(
+        f"{settings['y']}:{settings['y_dt']}",
+        scale=alt.Scale(domain=settings["y_domain"]),
+        axis=alt.Axis(title=settings["y_title"]),
+    )
+    if "x_axis_values" in settings and settings["x_axis_values"]:
+        x_axis = alt.X(
+            f"{settings['x']}:{settings['x_dt']}",
+            scale=alt.Scale(domain=settings["x_domain"]),
+            tickCount="jahr",
+        )
+    else:
+        x_axis = alt.X(
+            f"{settings['x']}:{settings['x_dt']}",
+            scale=alt.Scale(domain=settings["x_domain"]),
+        )
     if "color" in settings and settings["color"] is not None:
         if "hide_legend" in settings:
             color = alt.Color(
@@ -29,16 +44,8 @@ def line_chart(df, settings):
             alt.Chart(df)
             .mark_line(width=2, clip=True, opacity=settings["opacity"])
             .encode(
-                x=alt.X(
-                    f"{settings['x']}:{settings['x_dt']}",
-                    scale=alt.Scale(domain=settings["x_domain"]),
-                    axis=alt.Axis(format=(".0f")),
-                ),
-                y=alt.Y(
-                    f"{settings['y']}:{settings['y_dt']}",
-                    scale=alt.Scale(domain=settings["y_domain"]),
-                    axis=alt.Axis(title=settings["y_title"]),
-                ),
+                x=x_axis,
+                y=y_axis,
                 color=color,
                 tooltip=settings["tooltip"],
             )
@@ -46,17 +53,10 @@ def line_chart(df, settings):
     else:
         chart = (
             alt.Chart(df)
-            .mark_line(width=2, clip=True, opacity=0.5)
+            .mark_line(width=2, clip=True, opacity=settings["opacity"])
             .encode(
-                x=alt.X(
-                    f"{settings['x']}:{settings['x_dt']}",
-                    scale=alt.Scale(domain=settings["x_domain"]),
-                    axis=alt.Axis(format=(".0f")),
-                ),
-                y=alt.Y(
-                    f"{settings['y']}:{settings['y_dt']}",
-                    scale=alt.Scale(domain=settings["y_domain"]),
-                ),
+                x=x_axis,
+                y=y_axis,
                 tooltip=settings["tooltip"],
             )
         )
@@ -144,7 +144,10 @@ def time_series_line(df, settings):
             scale=alt.Scale(domain=settings["x_domain"]),
         )
     else:
-        xax = alt.X(f"{settings['x']}:T", title=settings["x_title"])
+        xax = alt.X(
+            f"{settings['x']}:T",
+            title=settings["x_title"],
+        )
 
     if settings["y_domain"][0] != settings["y_domain"][1]:
         yax = alt.Y(
@@ -329,16 +332,30 @@ def bar_chart(df: pd.DataFrame, settings: dict):
             axis=alt.Axis(title=settings["x_title"], format=settings["format_x"]),
         )
     else:
-        x_axis = alt.X(f"{settings['x']}:N")
+        x_axis = alt.X(f"{settings['x']}:{settings['x_dt']}")
     if "x_domain" in settings:
         x_axis.axis.scale = alt.Scale(domain=settings["x_domain"])
-    y_axis = alt.Y(settings["y"], title=settings["y_title"])
+    y_axis = alt.Y(f"{settings['y']}:{settings['y_dt']}", title=settings["y_title"])
     if "y_domain" in settings:
         y_axis.axis.scale = alt.Scale(domain=settings["y_domain"])
+
+    if "color_scheme" in settings:
+        color_scheme = settings["color_scheme"]
+        # not solved yet, see: https://stackoverflow.com/questions/66347857/sort-a-normalized-stacked-bar-chart-with-altair
+        color = alt.Color(
+            f"{settings['color']}:N",
+            scale=alt.Scale(
+                domain=list(color_scheme.keys()), range=list(color_scheme.values())
+            ),
+            sort=settings["x_sort"],
+        )
+    else:
+        color = settings["color"]
+
     plot = (
         alt.Chart(df)
         .mark_bar(size=settings["bar_width"])
-        .encode(x=x_axis, y=y_axis, tooltip=settings["tooltip"])
+        .encode(x=x_axis, y=y_axis, color=color, tooltip=settings["tooltip"])
     )
     if "h_line" in settings:
         plot += (

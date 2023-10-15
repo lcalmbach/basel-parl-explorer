@@ -4,9 +4,9 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from lang import get_lang
-from helper import show_table
-from enum import Enum, auto
-from plots import time_series_line, line_chart
+from helper import add_year_date, show_table
+from enum import Enum
+from plots import time_series_line, bar_chart
 
 
 PAGE = __name__
@@ -398,17 +398,17 @@ class Votations:
         self.parent = parent
         df_results["Datum"] = pd.to_datetime(df_results["Datum"])
         self.results = df_results
+        df_results = add_year_date(df_results, "Datum", "jahr_datum")
 
         self.all_elements = self.get_elements(df_matters)
         self.filtered_elements = pd.DataFrame()
         # results by fraction and restult type
         self.settings_plot = {
-            "x": "Jahr",
+            "x": "jahr_datum",
             "x_title": lang("year"),
-            # "x_dt": "O", # does not work, why?
             "y": "cnt_p_member",
             "y_title": "Anzahl pro Mitglied",
-            "tooltip": ["Jahr", "cnt_p_member"],
+            "tooltip": ["jahr_datum", "cnt_p_member"],
             "width": 800,
             "height": 600,
             "groups": ["SP", "SVP", "FDP", "LDP", "GLP"],
@@ -457,6 +457,7 @@ class Votations:
     def get_elements(self, df):
         df["Datum"] = pd.to_datetime(df["Datum"])
         df["jahr"] = df["Datum"].dt.year
+        df = add_year_date(df, "Datum", "jahr_datum")
         df["pzt_ja"] = df["Ja-Stimmen"] / (MEMBER_COUNT - df["Abwesende"]) * 100.0
         df["pzt_abwesend"] = df["Abwesende"] / MEMBER_COUNT * 100
         df["Angenommen"] = df["Ja-Stimmen"] > df["Nein-Stimmen"]
@@ -555,10 +556,11 @@ class Votations:
         }
 
         def get_members_per_fraction():
-            df = self.results[["Jahr", "Fraktion", "Sitz Nr."]].drop_duplicates()
+            group_fields = ["Jahr", "jahr_datum", "Fraktion"]
+            df = self.results[group_fields + ["Sitz Nr."]].drop_duplicates()
             df = (
-                df[["Jahr", "Fraktion"]]
-                .groupby(["Jahr", "Fraktion"])
+                df[group_fields]
+                .groupby(["Jahr", "jahr_datum", "Fraktion"])
                 .size()
                 .reset_index(name="Members")
             )
@@ -592,7 +594,7 @@ class Votations:
 
         with st.sidebar:
             df_fract_members = get_members_per_fraction()
-            group_fields = ["Jahr", "Fraktion"]
+            group_fields = ["Jahr", "jahr_datum", "Fraktion"]
             df = self.results[
                 self.results["Entscheid Mitglied"] == self.settings_plot["result"]
             ]
@@ -600,19 +602,19 @@ class Votations:
             if len(self.settings_plot["groups"]) > 0:
                 df = df[df["Fraktion"].isin(self.settings_plot["groups"])]
             df = df[group_fields].groupby(group_fields).size().reset_index(name="Count")
-            df = df.merge(df_fract_members, on=["Jahr", "Fraktion"])
+            df = df.merge(df_fract_members, on=group_fields)
             df["cnt_p_member"] = df["Count"] / df["Members"]
             self.settings_plot["color"] = "Fraktion"
             self.settings_plot[
                 "title"
             ] = f"{title_dict[self.settings_plot['result']]} {lang('per_member_and_fraction')}"
-        self.settings_plot["y_domain"] = [
-            df["cnt_p_member"].min(),
-            df["cnt_p_member"].max(),
-        ]
-        self.settings_plot["x_domain"] = [df["Jahr"].min(), df["Jahr"].max()]
+        self.settings_plot["y_domain"] = [0, df["cnt_p_member"].max()]
+        # self.settings_plot["x_domain"] = [
+        #    df["jahr_datum"].min(),
+        #    df["jahr_datum"].max(),
+        # ]
         self.settings_plot["tooltip"] = [
-            self.settings_plot["x"],
+            "Jahr",
             self.settings_plot["y"],
             self.settings_plot["color"],
         ]
@@ -622,7 +624,7 @@ class Votations:
         with tabs[1]:
             show_settings()
         with tabs[0]:
-            line_chart(df, self.settings_plot)
+            time_series_line(df, self.settings_plot)
             st.write(
                 lang("figure0_legend").format(title_dict[self.settings_plot["result"]])
             )
@@ -643,8 +645,9 @@ class Member:
         self.is_active_member = row["active_member"]
 
         self.full_name = f"{self.first_name} {self.name}"
-        self.pol_matters = self.parent.pol_matters.filter(
-            [{"field": "urheber", "value": f"{self.name}, {self.first_name}"}]
+        self.pol_matters = filter(
+            self.parent.pol_matters.all_elements,
+            [{"field": "urheber", "operator": "eq", "value": f"{self.name}, {self.first_name}"}],
         )
         self.memberships = self.parent.memberships.filter(
             [{"field": "uni_nr_adr", "value": self.uni_nr}]
@@ -736,6 +739,90 @@ class Member:
                 show_table(df, cols, DEF_GRID_SETTING)
             else:
                 st.markdown(lang("no_votations"))
+
+
+class Parties:
+    def __init__(self, parent, df_seats):
+        self.parent = parent
+        self.all_elements = self.get_elements(df_seats)
+        self.filtered_elements = pd.DataFrame()
+        self.settings_plot = {
+            "x": lang("seats"),
+            "x_dt": "Q",
+            "x_title": lang("year"),
+            "y": "Jahr",
+            "y_dt": "O",
+            "y_title": lang("year"),
+            "width": 800,
+            "height": 1000,
+            "color": "Partei",
+            "color_scheme": {
+                "GB, FraB, POB": "green",
+                "SP": "red",
+                "GLP": "lightgreen",
+                "EVP, VEW": "yellow",
+                "CVP, KVP": "orange",
+                "LDP, LP": "darkblue",
+                "FDP, RDP": "blue",
+                "SVP, BGP": "darkgreen",
+                "VA, SD, UVP, NA": "brown",
+                "PdA, KP": "blue",
+                "LdU": "grey",
+                "DSP": "grey",
+                "Andere": "grey",
+            },
+            "bar_width": 20,
+            "tooltip": ["Jahr", "Partei", lang("seats")],
+        }
+        # make sure the parties appear in the right order,
+        # see: https://de.wikipedia.org/wiki/Grosser_Rat_(Basel-Stadt)
+        self.settings_plot["x_sort"] = list(self.settings_plot["color_scheme"].keys())
+
+    def get_filter(self):
+        """Returns a list of filters to be applied on the members
+
+        Args:
+            df (pd.DataFrame): _description_
+            filters (list): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        filters = []
+        with st.sidebar.expander(f"🔎{lang('filter')}", expanded=True):
+            ...
+
+        return filters
+
+    def get_elements(self, df_seats):
+        """
+        This function takes a DataFrame of seat counts and returns a melted DataFrame with the year, party, and count columns.
+
+        Args:
+        - df_seats: A pandas DataFrame containing seat counts for each party and year.
+
+        Returns:
+        - A pandas DataFrame with the year, party, and count columns.
+        """
+        melted_df = pd.melt(
+            df_seats, id_vars=["Jahr"], var_name="Partei", value_name=lang("seats")
+        )
+        return melted_df
+
+    def select_item(self):
+        ...
+
+    def show_plot(self):
+        # filters = self.get_filter(excluded_list=["matter_title", "year", "status"])
+        df = self.all_elements
+        bar_chart(df, self.settings_plot)
+        st.markdown(lang("seat_distribution_legend"))
+        st.markdown(f"{lang('parties')}:")
+        text = ""
+        parties = sorted(list(self.parent.parties_dict.keys()))
+        for party in parties:
+            text += f"- {party}: {self.parent.parties_dict[party]}\n"
+        st.markdown(text)
 
 
 class Members:
@@ -937,11 +1024,11 @@ class PolMatters:
         self.first_year = self.all_elements["beginn_datum"].dt.year.min()
         self.theme_options = self.get_themes(self.all_elements)
         self.settings_plot = {
-            "x": "jahr",
+            "x": "jahr_datum",
             "x_title": lang("year"),
-            # "x_dt": "O", # does not work, why?
+            "x_format": "%Y",
             "y": "count",
-            "y_title": "Anzahl Vorstösse pro Thema",
+            "y_title": lang("figure1_ytitle"),
             "width": 800,
             "height": 600,
             "themes": [],
@@ -972,9 +1059,9 @@ class PolMatters:
                 name = st.text_input(lang("matter"))
                 if name > "":
                     filters = add_filter(filters, "titel", name, "contains")
-            
+
             # year
-            if "year" not in excluded_list:    
+            if "year" not in excluded_list:
                 year_options = [lang("year")] + self.parent.year_options
                 year = st.selectbox(lang("committee_type"), options=year_options)
                 if year_options.index(year) > 0:
@@ -992,11 +1079,13 @@ class PolMatters:
                 themes = st.multiselect(
                     lang("theme"),
                     self.theme_options,
-                    help="Selektiere ein oder mehrere Themen"
+                    help="Selektiere ein oder mehrere Themen",
                 )
                 self.settings_plot["themes"] = themes
                 if len(themes) > 0:
-                    filters = add_filter(filters, ["thema_1", "thema_2"], themes, "isin")
+                    filters = add_filter(
+                        filters, ["thema_1", "thema_2"], themes, "isin"
+                    )
 
             # Status
             if "status" not in excluded_list:
@@ -1013,6 +1102,7 @@ class PolMatters:
         df_urls = pd.read_csv("./matter_url.csv", sep=";")
         df = df.merge(df_urls, on="signatur", how="left")
         df["beginn_datum"] = pd.to_datetime(df["beginn_datum"])
+        df = add_year_date(df, "beginn_datum", "jahr_datum")
         df["jahr"] = df["beginn_datum"].dt.year.astype(int)
         return df
 
@@ -1051,49 +1141,52 @@ class PolMatters:
             with cols[0]:
                 grouping_options = lang("figure1_grouping_options")
                 self.settings_plot["groupby"] = st.selectbox(
-                    label="Gruppierung",
-                    options=grouping_options
+                    label="Gruppierung", options=grouping_options
                 )
                 if grouping_options.index(self.settings_plot["groupby"]) == 0:
                     self.settings_plot["color"] = None
                 elif grouping_options.index(self.settings_plot["groupby"]) == 1:
-                    self.settings_plot["color"] = 'thema_1'
+                    self.settings_plot["color"] = "thema_1"
                 else:
-                    self.settings_plot["color"] = 'partei'
+                    self.settings_plot["color"] = "partei"
 
         def handle_groupby_none(df: pd.DataFrame):
-            df.loc[:, 'count'] = 1
-            df_count = df[["jahr", 'count']].groupby(["jahr"]).sum().reset_index()
+            df.loc[:, "count"] = 1
+            df_count = (
+                df[["jahr_datum", "count"]].groupby(["jahr_datum"]).sum().reset_index()
+            )
             self.settings_plot["y"] = "count"
+            self.settings_plot["y_title"] = lang("figure1_title_none")
             self.settings_plot["fig_legend"] = lang("figure1_legend_groupby_none")
             return df_count
 
         def handle_groupby_theme(df: pd.DataFrame):
-            df = df[["jahr", "thema_1", "thema_2"]].copy()
+            df = df[["jahr_datum", "thema_1", "thema_2"]].copy()
             df["weight"] = df.apply(lambda row: 0.5 if row["thema_2"] else 1, axis=1)
-            df_theme2 = df[["jahr", "thema_2", "weight"]].copy().dropna()
-            df_theme2.columns = ["jahr", "thema_1", "weight"]
+            df_theme2 = df[["jahr_datum", "thema_2", "weight"]].copy().dropna()
+            df_theme2.columns = ["jahr_datum", "thema_1", "weight"]
             df = pd.concat([df, df_theme2], ignore_index=True)
             # if a filte ris set on the theme, we need to filter again since in the original filter
             # all matters are found where 1 of the theme fields matches the theme.
             if len(self.settings_plot["themes"]) > 0:
                 df = df[df["thema_1"].isin(self.settings_plot["themes"])]
-            df = df.groupby(["jahr", "thema_1"])["weight"].sum().reset_index()
+            df = df.groupby(["jahr_datum", "thema_1"])["weight"].sum().reset_index()
             self.settings_plot["title"] = "Anzahl Vorstösse pro Jahr nach Thema"
             self.settings_plot["fig_legend"] = lang("figure1_legend_groupby_theme")
             self.settings_plot["y"] = "weight"
+
             return df
 
         def handle_groupby_party(df: pd.DataFrame):
-            df.loc[:, 'count'] = 1
-            fields = ["jahr", "partei", "count"]
-            df = df[fields].groupby(["jahr", "partei"]).sum().reset_index()
+            df.loc[:, "count"] = 1
+            fields = ["jahr_datum", "partei", "count"]
+            df = df[fields].groupby(["jahr_datum", "partei"]).sum().reset_index()
             self.settings_plot["y"] = "count"
-            self.settings_plot["fig_legend"] = lang("figure0_legend_groupby_party")
+            self.settings_plot["fig_legend"] = lang("figure1_legend_groupby_party")
             return df
 
         show_settings()
-        filters = self.get_filter(excluded_list=['matter_title', 'year', 'status'])
+        filters = self.get_filter(excluded_list=["matter_title", "year", "status"])
         df = filter(self.all_elements, filters)
         if self.settings_plot["color"] is None:
             df = handle_groupby_none(df)
@@ -1102,18 +1195,22 @@ class PolMatters:
         elif self.settings_plot["color"] == "partei":
             df = handle_groupby_party(df)
 
-        self.settings_plot["y_domain"] = [
-                0, df[self.settings_plot["y"]].max()
-            ]
-        self.settings_plot["x_domain"] = [df["jahr"].min(), df["jahr"].max()]
+        self.settings_plot["y_domain"] = [0, df[self.settings_plot["y"]].max()]
+        # self.settings_plot["x_domain"] = [
+        #    df["jahr_datum"].min(),
+        #    df["jahr_datum"].max(),
+        # ]
+
         self.settings_plot["tooltip"] = [
             self.settings_plot["x"],
             self.settings_plot["y"],
         ]
         if self.settings_plot["color"] is not None:
             self.settings_plot["tooltip"].append(self.settings_plot["color"])
-        self.settings_plot["title"] = f"{lang('figure0_title')} {self.settings_plot['groupby']}"
-        line_chart(df, self.settings_plot)
+        self.settings_plot[
+            "title"
+        ] = f"{lang('figure1_title_none')} {self.settings_plot['groupby']}"
+        time_series_line(df, self.settings_plot)
         st.write(self.settings_plot["fig_legend"])
 
 
@@ -1184,6 +1281,8 @@ class Parliament:
             self.votations.show_plot()
         elif plot_options.index(selected_plot) == 1:
             self.pol_matters.show_plot()
+        elif plot_options.index(selected_plot) == 2:
+            self.parties.show_plot()
 
     def __init__(self):
         with st.spinner(lang("loading_data")):
@@ -1226,7 +1325,9 @@ class Parliament:
             party_df = (
                 df_all_members[["partei", "partei_kname"]].drop_duplicates().dropna()
             )
-            self.parties = dict(zip(party_df["partei_kname"], party_df["partei"]))
+            self.parties_dict = dict(zip(party_df["partei_kname"], party_df["partei"]))
+            df = pd.read_csv("./parties.tab", sep=";")
+            self.parties = Parties(self, df)
 
             text.write(lang("loading_documents"))
             self.documents = Documents(self, get_table(Urls.DOCUMENTS.value))

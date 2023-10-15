@@ -10,8 +10,36 @@ import fitz
 import requests
 
 
+def add_year_date(df: pd.DataFrame, date_column: str, year_date_col: str):
+    """
+    Adds a year-end date to a DataFrame based on a specified date column.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to add the year-end date to.
+        date_column (str): The name of the column containing the date values.
+        year_date_col (str): The name of the new column to add the year-end date to.
+
+    Returns:
+        pd.DataFrame: The original DataFrame with the new year-end date column added.
+    """
+    df[year_date_col] = df[date_column].dt.year.astype(str) + "-12-31"
+    df[year_date_col] = pd.to_datetime(df[year_date_col])
+    return df
+
+
 def read_pdf_from_url(url: str):
-    # Step 1: Download the PDF
+    """
+    Downloads a PDF from a given URL and returns its text content.
+
+    Args:
+        url (str): The URL of the PDF to download.
+
+    Returns:
+        str: The text content of the downloaded PDF.
+
+    Raises:
+        Exception: If the PDF fails to download or cannot be opened.
+    """
     response = requests.get(url)
     if response.status_code == 200:
         with open("temp.pdf", "wb") as f:
@@ -23,14 +51,13 @@ def read_pdf_from_url(url: str):
                 text += page.get_text()
             return text
     else:
-        st.error(f"Failed to download PDF. Status code: {response.status_code}")
-        return "do document found"
+        raise Exception(f"Failed to download PDF. Status code: {response.status_code}")
 
 
 def show_download_button(df: pd.DataFrame, cfg: dict = {}):
     if "filename" not in cfg:
         cfg["filename"] = "file.csv"
-    key = randomword(10)
+    key = random_word(10)
 
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button(
