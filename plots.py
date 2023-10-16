@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-import plotly.graph_objects as go
 
 from helper import round_to_nearest
 
@@ -498,31 +497,3 @@ def barchart(df, settings):
         width=settings["width"], height=settings["height"], title=title
     )
     st.altair_chart(plot)
-
-
-def radar_chart(df: pd.DataFrame, settings: dict):
-    """Shows a radar plot. Data is first normalized to a 0-100 scale.
-
-    Args:
-        df (pd.DataFrame)): Expected input: df with columns: ['name', *[name of variables]]
-        settings (_type_): [title, ]
-    """
-
-    variables = list(df.columns).copy()
-    variables.remove("name")
-    fig = go.Figure()
-
-    for index, row in df.iterrows():
-        trace = []
-        name = row["name"]
-        for col in variables:
-            trace.append(row[col])
-        fig.add_trace(
-            go.Scatterpolar(r=trace, theta=variables, fill="toself", name=name)
-        )
-
-    fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=settings["range"])),
-        showlegend=True,
-    )
-    st.plotly_chart(fig)

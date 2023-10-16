@@ -4,13 +4,17 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from lang import get_lang
-from helper import add_year_date, show_table
+from helper import add_year_date, show_table, get_var
 from enum import Enum
 from plots import time_series_line, bar_chart
-
+import boto3
+from whoosh.fields import Schema, TEXT, ID
+from whoosh import index
+from whoosh.qparser import QueryParser
 
 PAGE = __name__
-MEMBER_COUNT = 100
+MEMBER_COUNT = 100  # parliment members since 2008
+DATA = './data/'  # location of local data files
 DEF_GRID_SETTING = {
     "fit_columns_on_grid_load": True,
     "height": 400,
@@ -89,79 +93,36 @@ def filter(df: pd.DataFrame, filters: list):
     return df
 
 
+import pandas as pd
+
 def get_table(table_nr: int):
+    """
+    Retrieves a table from the Basel-Stadt Open Data API and returns it as a pandas DataFrame.
+
+    Args:
+        table_nr (int): The ID of the table to retrieve.
+
+    Returns:
+        pandas.DataFrame: The retrieved table as a pandas DataFrame.
+    """
+
     URL = f"https://data.bs.ch/api/explore/v2.1/catalog/datasets/{table_nr}/exports/csv?lang=de&timezone=Europe%2FBerlin&use_labels=false&delimiter=%3B"
     df = pd.read_csv(URL, sep=";")
     return df
 
 
-class Document:
-    def __init__(self, parent, row, signatur):
-        self.parent = parent
-        self.data = pd.DataFrame(row).T.reset_index()
-        self.data["themen"] = self.data["thema_1"]
-        self.data["themen"][self.data["thema_2"].notna()] = (
-            self.data["thema_1"] + ", " + self.data["thema_2"]
-        )
-        self.signatur = signatur
-        self.type = row["geschaftstyp"]
-        self.urheber = row["urheber"]
-        self.title = row["titel"]
-        self.start_date = row["beginn_datum"]
-        self.end_date = row["ende"]
-        self.url_matter = row["geschaft"]
-        self.url_doc = row["pdf_file_url"]
-        self.summary = row["summary"]
-
-    def show_detail(self):
-        st.markdown(f"{lang('document')}: **{self.title}**")
-        tabs = st.tabs(lang("document_tabs"))
-        with tabs[0]:
-            fields = [
-                "dokudatum",
-                "dok_laufnr",
-                "titel_dok",
-                "laufnr_ges",
-                "signatur_ges",
-                "titel_ges",
-                "url_ges",
-                "url_dok",
-            ]
-            df = self.data[fields].copy()
-            df["status"] = [
-                lang("in_progress") if x == "A" else lang("closed")
-                for x in df["status"]
-            ]
-            df.columns = [
-                "dokudatum",
-                "dok_laufnr",
-                "titel_dok",
-                "laufnr_ges",
-                "signatur_ges",
-                "titel_ges",
-                "url_ges",
-            ]
-            df = pd.DataFrame(df.T).reset_index().dropna()
-            df.columns = lang("field_value_cols")
-            table = df.to_html(index=False)
-            # st.markdown(table, unsafe_allow_html=True)
-        with tabs[1]:
-            cols = st.columns([2, 10])
-            with cols[0]:
-                ...
-            with cols[1]:
-                ...
-            with cols[0]:
-                ...
-            with cols[1]:
-                ...
-
-
 class Documents:
-    def __init__(self, parent, df):
+    def __init__(self, parent, docs_df):
         self.parent = parent
-        self.all_elements = self.get_elements(df)
-
+        self.all_elements = self.get_elements(docs_df)
+        self.s3 = boto3.resource(
+            's3',
+            aws_access_key_id=get_var('aws_access_key_id'), 
+            aws_secret_access_key=get_var('aws_secret_access_key'), 
+            region_name='us-east-1'
+        )
+        self.ix = self.create_index_aws() if not index.exists_in("indexdir") else index.open_dir("indexdir")
+    
     def get_elements(self, df):
         fields = [
             "dokudatum",
@@ -177,40 +138,72 @@ class Documents:
         df["dokudatum"] = pd.to_datetime(df["dokudatum"])
         df["year"] = df["dokudatum"].dt.year
         return df[fields]
-
-    def select_item(self):
-        filters = ["year"]
-        self.filtered_elements = get_filter(self.all_elements, filters, self.parent)
-        fields = [
-            "dokudatum",
-            "titel_dok",
-            "signatur_ges",
-            "titel_ges",
-        ]
-        settings = {
-            "fit_columns_on_grid_load": False,
-            "height": 400,
-            "selection_mode": "single",
-            "field": "documents",
-        }
-        cols = []
-        st.subheader(
-            f"{lang('documents')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
-        )
-        sel_member = show_table(self.filtered_elements[fields], cols, settings)
-        if len(sel_member) > 0:
-            row = self.filtered_elements.set_index("dok_laufnr").loc[
-                sel_member["dok_laufnr"]
-            ]
-            doc = Document(self.parent, row, sel_member["dok_laufnr"])
-            doc.show_detail()
-
+    
     def filter(self, filters):
         for filter in filters:
             df = self.all_elements[
                 self.all_elements[filter["field"]] == filter["value"]
             ]
         return df
+    
+    def create_index_aws(self):
+        """
+        Creates an index of documents stored in an S3 bucket using the Whoosh search engine.
+
+        Returns:
+            An index object representing the indexed documents.
+        """
+        # Define the schema for the index
+        schema = Schema(filename=ID(stored=True), content=TEXT(stored=True))
+
+        # Create an index writer
+        ix = index.create_in("indexdir", schema)
+        writer = ix.writer()
+        # Initialize the S3 bucket
+        bucket_name = 'lc-opendata01'
+        folder_name = 'grosser_rat_bs_docs/'
+
+        # Loop through each file in the text_files folder and index them
+        with st.spinner("Indexing documents..."):
+            placeholder = st.empty()
+            files = self.s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
+            cnt = 1
+            for obj in files:
+                # reduce number to dok_nr
+                dok_nr = obj.key.replace(".txt", "").replace(folder_name, "")
+                placeholder.write(f"{dok_nr} ({cnt}/{len(files)})")
+                content_object = self.s3.Object(bucket_name, obj.key)
+                file_content = content_object.get()['Body'].read().decode('iso-8859-1')
+                file_content = file_content.replace('\n', ' ')
+                writer.add_document(filename=dok_nr, content=file_content)
+                cnt += 1
+            writer.commit()
+            return ix
+
+    def search(self):
+        searcher = self.ix.searcher()
+        with st.columns(2)[0]:
+            query_text = st.text_input(f"{lang('search_for')}:")
+        if st.button("Search"):
+            parser = QueryParser("content", self.ix.schema)
+            query = parser.parse(query_text)
+            results = searcher.search(query, limit=None)
+            # Allow larger fragments
+            results.fragmenter.maxchars = 300
+
+            # Show more context before and after
+            results.fragmenter.surround = 50
+            # Display results
+            st.write(lang('found_documents').format(len(results)))
+            for hit in results:
+                dok_laufnr = hit['filename'].replace(".txt", "").replace('grosser_rat_bs_docs/', "")
+                row = self.all_elements[self.all_elements['dok_laufnr'] == int(dok_laufnr)].iloc[0]
+                st.write(f"[**{row['titel_dok']}**]({row['url_dok']}) {lang('matter')}: [{row['signatur_ges']}]({row['url_ges']})")
+                st.markdown(
+                    hit.highlights("content").replace('\n', ' ') + '...',
+                    unsafe_allow_html=True
+                )
+            searcher.close()
 
 
 class Body:
@@ -1145,7 +1138,7 @@ class PolMatters:
         return filters
 
     def get_elements(self, df):
-        df_urls = pd.read_csv("./matter_url.csv", sep=";")
+        df_urls = pd.read_csv(DATA + "matter_url.csv", sep=";")
         df = df.merge(df_urls, on="signatur", how="left")
         df["beginn_datum"] = pd.to_datetime(df["beginn_datum"])
         df = add_year_date(df, "beginn_datum", "jahr_datum")
@@ -1332,8 +1325,8 @@ class Parliament:
 
     def __init__(self):
         with st.spinner(lang("loading_data")):
-            text = st.empty()
-            text.write(lang("loading_members"))
+            placeholder = st.empty()
+            placeholder.write(lang("loading_members"))
             df_all_members = get_table(Urls.MEMBERS_ALL.value)
             df_all_members["gr_beginn"] = pd.to_datetime(df_all_members["gr_beginn"])
             self.min_year = df_all_members["gr_beginn"].dt.year.min()
@@ -1346,19 +1339,19 @@ class Parliament:
                 df_all_members["gr_wahlkreis"].unique()
             )
 
-            text.write(lang("loading_matters"))
+            placeholder.write(lang("loading_matters"))
             df_matters = get_table(Urls.INITIATIVES.value)
             self.pol_matters = PolMatters(self, df_matters)
             self.pol_matters_themes = list(df_matters["thema_1"].unique()) + list(
                 df_matters["thema_2"].unique()
             )
 
-            text.write(lang("loading_committees"))
+            placeholder.write(lang("loading_committees"))
             df_memberships = get_table(Urls.MEMBERSHIPS.value)
             self.memberships = Memberships(self, df_memberships)
 
             # holds urls from grosserrat.bs.ch for active committees
-            df_url_bodies = pd.read_csv("./committee_url.csv", sep=";")
+            df_url_bodies = pd.read_csv(DATA + "committee_url.csv", sep=";")
             self.bodies = Bodies(self, df_memberships, df_url_bodies)
             self.body_type_options = list(df_memberships["gremientyp"].unique())
             df_bodies = (
@@ -1372,15 +1365,17 @@ class Parliament:
                 df_all_members[["partei", "partei_kname"]].drop_duplicates().dropna()
             )
             self.parties_dict = dict(zip(party_df["partei_kname"], party_df["partei"]))
-            df = pd.read_csv("./parties.tab", sep=";")
+            df = pd.read_csv(DATA + "parties.tab", sep=";")
             self.parties = Parties(self, df)
 
-            text.write(lang("loading_documents"))
-            self.documents = Documents(self, get_table(Urls.DOCUMENTS.value))
+            placeholder.write(lang("loading_documents"))
+            df_docs = get_table(Urls.DOCUMENTS.value)
+            self.documents = Documents(self, df_docs)
 
-            text.write(lang("loading_votations"))
+            placeholder.write(lang("loading_votations"))
             # takes too much time, 135 MB as of 10/23, use votations.py to preprocess
             # self.votations = Votations(self, get_table(100186))
-            df_matters = pd.read_parquet("./votation_matters.parquet")
-            df_results = pd.read_parquet("./votation_results.parquet")
+            df_matters = pd.read_parquet(DATA + "votation_matters.parquet")
+            df_results = pd.read_parquet(DATA + "votation_results.parquet")
             self.votations = Votations(self, df_matters, df_results)
+            placeholder.write("")

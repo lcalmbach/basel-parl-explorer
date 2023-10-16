@@ -7,20 +7,22 @@ from streamlit_option_menu import option_menu
 from lang import get_used_languages, init_lang_dict_complete, get_lang
 from grosser_rat import Parliament
 
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 __author__ = "Lukas Calmbach"
 __author_email__ = "lcalmbach@gmail.com"
-VERSION_DATE = "2023-15-14"
+VERSION_DATE = "2023-10-16"
 APP_EMOJI = "🏛️"
-APP_NAME = f"BaselParlExplorer"
+APP_NAME = "BaselParlExplorer"
 GIT_REPO = ""
+DATA = './data/'
+STATIC = './static/'
 
 PAGE = "app"
 LOTTIE_URL = "https://lottie.host/b3511e74-ab52-49a1-8105-7a6a49f00d4b/aDXvTKDGIX.json"
 
 
 def init():
-    st.set_page_config(  # Alternate names: setup_page, page, layout
+    st.set_page_config(  
         initial_sidebar_state="auto",
         page_title=APP_NAME,
         page_icon=APP_EMOJI,
@@ -119,24 +121,37 @@ def show_app_info():
     """
     cols = st.columns([1, 10, 1])
     with cols[1]:
-        st.image("./info_app_wide.jpg")
+        st.image(STATIC + "info_app_wide.jpg")
         st.write("")
         st.header(f"{APP_EMOJI}{APP_NAME}")
         st.markdown(lang["app_info"], unsafe_allow_html=True)
 
 
 def update_matters():
+    """
+    Updates the matter URLs in the matter_url.csv file with the corresponding summaries from the summaries.csv file.
+
+    Reads the matter URLs from the matter_url.csv file and extracts the filename from the URL. Then, reads the summaries
+    from the summaries.csv file and merges them with the matter URLs based on the filename. Finally, writes the updated
+    matter URLs to the matter_url.csv file.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
     from urllib.parse import urlparse
 
-    df_matter = pd.read_csv("./matter_url.csv", sep=";")
+    df_matter = pd.read_csv(DATA + "matter_url.csv", sep=";")
     df_matter = df_matter[["signatur", "pdf_file_url"]]
     # Extract the path and split it to get the filename
     df_matter["key"] = df_matter["pdf_file_url"].apply(
         lambda x: urlparse(x).path.split("/")[-1]
     )
-    df_summaries = pd.read_csv("./summaries.csv", sep="|")
+    df_summaries = pd.read_csv(DATA + "summaries.csv", sep="|")
     df_matter = df_matter.merge(df_summaries, on="key", how="left")
-    df_matter.to_csv("./matter_url.csv", sep=";", index=False)
+    df_matter.to_csv(DATA + "matter_url.csv", sep=";", index=False)
 
 
 def main() -> None:
@@ -174,6 +189,7 @@ def main() -> None:
                 "collection-fill",
                 "list",
                 "hammer",
+                "file-pdf",
                 "graph-up",
             ],
             menu_icon="cast",
@@ -191,6 +207,8 @@ def main() -> None:
     elif menu_action == menu_options[4]:
         st.session_state.grosser_rat.votations.select_item()
     elif menu_action == menu_options[5]:
+        st.session_state.grosser_rat.documents.search()
+    elif menu_action == menu_options[6]:
         st.session_state.grosser_rat.select_plot()
     display_language_selection()
 
