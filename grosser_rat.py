@@ -11,6 +11,7 @@ import boto3
 from whoosh.fields import Schema, TEXT, ID
 from whoosh import index
 from whoosh.qparser import QueryParser
+import os
 
 PAGE = __name__
 MEMBER_COUNT = 100  # parliment members since 2008
@@ -121,7 +122,11 @@ class Documents:
             aws_secret_access_key=get_var('aws_secret_access_key'), 
             region_name='us-east-1'
         )
-        self.ix = self.create_index_aws() if not index.exists_in("indexdir") else index.open_dir("indexdir")
+        file_path = '/indexdir/_MAIN_0.toc'
+        if os.path.exists(file_path):
+            self.ix = index.open_dir("indexdir")
+        else:
+            self.ix = self.create_index_aws()
     
     def get_elements(self, df):
         fields = [
@@ -153,6 +158,7 @@ class Documents:
         Returns:
             An index object representing the indexed documents.
         """
+        print('creating index')
         # Define the schema for the index
         schema = Schema(filename=ID(stored=True), content=TEXT(stored=True))
 
@@ -162,16 +168,17 @@ class Documents:
         # Initialize the S3 bucket
         bucket_name = 'lc-opendata01'
         folder_name = 'grosser_rat_bs_docs/'
-
+        bucket = self.s3.Bucket(bucket_name)
+        files = bucket.objects.filter(Prefix=folder_name)
+        st.write(len(list(files)))
         # Loop through each file in the text_files folder and index them
         with st.spinner("Indexing documents..."):
             placeholder = st.empty()
-            files = self.s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
             cnt = 1
             for obj in files:
                 # reduce number to dok_nr
                 dok_nr = obj.key.replace(".txt", "").replace(folder_name, "")
-                placeholder.write(f"{dok_nr} ({cnt}/{len(files)})")
+                placeholder.write(f"{dok_nr} ({cnt}/{len(list(files))})")
                 content_object = self.s3.Object(bucket_name, obj.key)
                 file_content = content_object.get()['Body'].read().decode('iso-8859-1')
                 file_content = file_content.replace('\n', ' ')

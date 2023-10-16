@@ -35,6 +35,7 @@ def get_var(varname: str) -> str:
     # else:
     #     return st.secrets[varname]
     
+    
 def add_year_date(df: pd.DataFrame, date_column: str, year_date_col: str):
     """
     Adds a year-end date to a DataFrame based on a specified date column.
