@@ -1,16 +1,15 @@
 import streamlit as st
 import pandas as pd
-import json
 import os
-import socket
 import random
 import string
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode, GridUpdateMode
 import fitz
 import requests
+from typing import Dict
 
 
-LOCAL_HOST = 'liestal'
+LOCAL_HOST = "liestal"
 
 
 def get_var(varname: str) -> str:
@@ -34,8 +33,8 @@ def get_var(varname: str) -> str:
     #     return os.environ[varname]
     # else:
     #     return st.secrets[varname]
-    
-    
+
+
 def add_year_date(df: pd.DataFrame, date_column: str, year_date_col: str):
     """
     Adds a year-end date to a DataFrame based on a specified date column.
@@ -80,14 +79,30 @@ def read_pdf_from_url(url: str):
         raise Exception(f"Failed to download PDF. Status code: {response.status_code}")
 
 
-def show_download_button(df: pd.DataFrame, cfg: dict = {}):
+def show_download_button(df: pd.DataFrame, cfg: Dict = {}) -> None:
+    """
+    Displays a download button for a given Pandas DataFrame.
+
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        The DataFrame to be downloaded.
+    cfg : dict, optional
+        A dictionary containing the following keys:
+            - "filename": str, the name of the downloaded file (default: "file.csv")
+            - "button_text": str, the text displayed on the download button (default: "Download CSV")
+
+    Returns:
+    --------
+    None
+    """
     if "filename" not in cfg:
         cfg["filename"] = "file.csv"
     key = random_word(10)
 
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button(
-        label=cfg["button_text"],
+        label=cfg.get("button_text", "Download CSV"),
         data=csv,
         file_name=cfg["filename"],
         mime="text/csv",
@@ -96,6 +111,18 @@ def show_download_button(df: pd.DataFrame, cfg: dict = {}):
 
 
 def show_table(df: pd.DataFrame, cols=[], settings={}):
+    """
+    Displays a table using AgGrid library.
+
+    Args:
+        df (pd.DataFrame): The dataframe to display.
+        cols (list, optional): A list of dictionaries containing column configuration options. Defaults to [].
+        settings (dict, optional): A dictionary containing grid configuration options. Defaults to {}.
+
+    Returns:
+        list: A list containing the selected row(s) from the table.
+    """
+
     def set_defaults():
         if "height" not in settings:
             settings["height"] = 400
@@ -171,4 +198,4 @@ def round_to_nearest(value, base):
     return int(value / base / base) * base
 
 
-LOCAL_HOST = "liestal"
+

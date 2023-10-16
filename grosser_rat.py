@@ -7,7 +7,7 @@ from lang import get_lang
 from helper import add_year_date, show_table, get_var
 from enum import Enum
 from plots import time_series_line, bar_chart
-import boto3
+# import boto3
 from whoosh.fields import Schema, TEXT, ID
 from whoosh import index
 from whoosh.qparser import QueryParser
@@ -15,7 +15,7 @@ import os
 
 PAGE = __name__
 MEMBER_COUNT = 100  # parliment members since 2008
-DATA = './data/'  # location of local data files
+DATA = "./data/"  # location of local data files
 DEF_GRID_SETTING = {
     "fit_columns_on_grid_load": True,
     "height": 400,
@@ -96,6 +96,7 @@ def filter(df: pd.DataFrame, filters: list):
 
 import pandas as pd
 
+
 def get_table(table_nr: int):
     """
     Retrieves a table from the Basel-Stadt Open Data API and returns it as a pandas DataFrame.
@@ -114,21 +115,32 @@ def get_table(table_nr: int):
 
 class Documents:
     def __init__(self, parent, docs_df):
+        """
+        Initializes a Documents object.
+
+        Args:
+            parent: The parent object.
+            docs_df: A pandas DataFrame containing the documents to be indexed.
+        """
         self.parent = parent
         self.all_elements = self.get_elements(docs_df)
-        self.s3 = boto3.resource(
-            's3',
-            aws_access_key_id=get_var('aws_access_key_id'), 
-            aws_secret_access_key=get_var('aws_secret_access_key'), 
-            region_name='us-east-1'
-        )
-        file_path = '/indexdir/_MAIN_0.toc'
-        if os.path.exists(file_path):
-            self.ix = index.open_dir("indexdir")
-        else:
-            self.ix = self.create_index_aws()
-    
+        # self.s3 = boto3.resource(
+        #     "s3",
+        #     aws_access_key_id=get_var("aws_access_key_id"),
+        #     aws_secret_access_key=get_var("aws_secret_access_key"),
+        #     region_name="us-east-1",
+        # )
+
     def get_elements(self, df):
+        """
+        Gets the elements from a pandas DataFrame.
+
+        Args:
+            df: A pandas DataFrame.
+
+        Returns:
+            A pandas DataFrame containing the specified fields.
+        """
         fields = [
             "dokudatum",
             "dok_laufnr",
@@ -143,14 +155,23 @@ class Documents:
         df["dokudatum"] = pd.to_datetime(df["dokudatum"])
         df["year"] = df["dokudatum"].dt.year
         return df[fields]
-    
+
     def filter(self, filters):
+        """
+        Filters the documents based on the specified filters.
+
+        Args:
+            filters: A list of filters.
+
+        Returns:
+            A pandas DataFrame containing the filtered documents.
+        """
         for filter in filters:
             df = self.all_elements[
                 self.all_elements[filter["field"]] == filter["value"]
             ]
         return df
-    
+
     def create_index_aws(self):
         """
         Creates an index of documents stored in an S3 bucket using the Whoosh search engine.
@@ -158,7 +179,7 @@ class Documents:
         Returns:
             An index object representing the indexed documents.
         """
-        print('creating index')
+        print("creating index")
         # Define the schema for the index
         schema = Schema(filename=ID(stored=True), content=TEXT(stored=True))
 
@@ -166,8 +187,8 @@ class Documents:
         ix = index.create_in("indexdir", schema)
         writer = ix.writer()
         # Initialize the S3 bucket
-        bucket_name = 'lc-opendata01'
-        folder_name = 'grosser_rat_bs_docs/'
+        bucket_name = "lc-opendata01"
+        folder_name = "grosser_rat_bs_docs/"
         bucket = self.s3.Bucket(bucket_name)
         files = bucket.objects.filter(Prefix=folder_name)
         st.write(len(list(files)))
@@ -180,14 +201,17 @@ class Documents:
                 dok_nr = obj.key.replace(".txt", "").replace(folder_name, "")
                 placeholder.write(f"{dok_nr} ({cnt}/{len(list(files))})")
                 content_object = self.s3.Object(bucket_name, obj.key)
-                file_content = content_object.get()['Body'].read().decode('iso-8859-1')
-                file_content = file_content.replace('\n', ' ')
+                file_content = content_object.get()["Body"].read().decode("iso-8859-1")
+                file_content = file_content.replace("\n", " ")
                 writer.add_document(filename=dok_nr, content=file_content)
                 cnt += 1
             writer.commit()
             return ix
 
     def search(self):
+        """
+        Searches the indexed documents using the Whoosh search engine.
+        """
         searcher = self.ix.searcher()
         with st.columns(2)[0]:
             query_text = st.text_input(f"{lang('search_for')}:")
@@ -201,14 +225,22 @@ class Documents:
             # Show more context before and after
             results.fragmenter.surround = 50
             # Display results
-            st.write(lang('found_documents').format(len(results)))
+            st.write(lang("found_documents").format(len(results)))
             for hit in results:
-                dok_laufnr = hit['filename'].replace(".txt", "").replace('grosser_rat_bs_docs/', "")
-                row = self.all_elements[self.all_elements['dok_laufnr'] == int(dok_laufnr)].iloc[0]
-                st.write(f"[**{row['titel_dok']}**]({row['url_dok']}) {lang('matter')}: [{row['signatur_ges']}]({row['url_ges']})")
+                dok_laufnr = (
+                    hit["filename"]
+                    .replace(".txt", "")
+                    .replace("grosser_rat_bs_docs/", "")
+                )
+                row = self.all_elements[
+                    self.all_elements["dok_laufnr"] == int(dok_laufnr)
+                ].iloc[0]
+                st.write(
+                    f"[**{row['titel_dok']}**]({row['url_dok']}) {lang('matter')}: [{row['signatur_ges']}]({row['url_ges']})"
+                )
                 st.markdown(
-                    hit.highlights("content").replace('\n', ' ') + '...',
-                    unsafe_allow_html=True
+                    hit.highlights("content").replace("\n", " ") + "...",
+                    unsafe_allow_html=True,
                 )
             searcher.close()
 

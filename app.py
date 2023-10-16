@@ -14,15 +14,15 @@ VERSION_DATE = "2023-10-16"
 APP_EMOJI = "🏛️"
 APP_NAME = "BaselParlExplorer"
 GIT_REPO = ""
-DATA = './data/'
-STATIC = './static/'
+DATA = "./data/"
+STATIC = "./static/"
 
 PAGE = "app"
 LOTTIE_URL = "https://lottie.host/b3511e74-ab52-49a1-8105-7a6a49f00d4b/aDXvTKDGIX.json"
 
 
 def init():
-    st.set_page_config(  
+    st.set_page_config(
         initial_sidebar_state="auto",
         page_title=APP_NAME,
         page_icon=APP_EMOJI,
@@ -189,7 +189,7 @@ def main() -> None:
                 "collection-fill",
                 "list",
                 "hammer",
-                "file-pdf",
+                # "file-pdf",
                 "graph-up",
             ],
             menu_icon="cast",
@@ -206,9 +206,9 @@ def main() -> None:
         st.session_state.grosser_rat.pol_matters.select_item()
     elif menu_action == menu_options[4]:
         st.session_state.grosser_rat.votations.select_item()
+    # elif menu_action == menu_options[5]:
+    #     st.session_state.grosser_rat.documents.search()
     elif menu_action == menu_options[5]:
-        st.session_state.grosser_rat.documents.search()
-    elif menu_action == menu_options[6]:
         st.session_state.grosser_rat.select_plot()
     display_language_selection()
 
