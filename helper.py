@@ -29,10 +29,11 @@ def get_var(varname: str) -> str:
     Raises:
         KeyError: If the environment variable or secret is not defined.
     """
-    if socket.gethostname().lower() == LOCAL_HOST:
-        return os.environ[varname]
-    else:
-        return st.secrets[varname]
+    return os.environ[varname]
+    # if socket.gethostname().lower() == LOCAL_HOST:
+    #     return os.environ[varname]
+    # else:
+    #     return st.secrets[varname]
     
 def add_year_date(df: pd.DataFrame, date_column: str, year_date_col: str):
     """
