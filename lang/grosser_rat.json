@@ -8,6 +8,7 @@
     "membership_status": "Mitglied Status",
     "voting_district": "Wahlkreis",
     "committee_type": "Gremiumstyp",
+    "matter_type": "Gesch\u00e4ftstyp",
     "committee_members": "Mitgliedschaften des Gremiums",
     "parliament_committees": "Gremien des grossen Rats",
     "member_tabs": [
@@ -105,6 +106,7 @@
     "membership_status": "Mitglied Status",
     "voting_district": "Wahlkreis",
     "committee_type": "Gremiumstyp",
+    "matter_type": "Gesch\u00e4ftstyp",
     "committee_members": "Mitgliedschaften des Gremiums",
     "parliament_committees": "Gremien des grossen Rats",
     "member_tabs": [
@@ -201,6 +203,7 @@
     "membership_status": "Statut de membre",
     "voting_district": "Circonscription \u00e9lectorale",
     "committee_type": "Type de comit\u00e9",
+    "matter_type": "Type d'affaire",
     "committee_members": "Adh\u00e9sions de l'organe",
     "parliament_committees": "Organes du Grand Conseil",
     "member_tabs": ["Personne", "Affaires", "Adh\u00e9sions aux organes"],
@@ -290,6 +293,7 @@
     "membership_status": "Member status",
     "voting_district": "Electoral district",
     "committee_type": "Type of committee",
+    "matter_type": "Type of matter",
     "committee_members": "Memberships of the committee",
     "parliament_committees": "Committees of the Grand Council",
     "member_tabs": ["Person", "Matters", "Membership of committees"],

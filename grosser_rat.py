@@ -88,7 +88,7 @@ def filter(df: pd.DataFrame, filters: list):
         elif filter["operator"] == "st":
             df = df[df[filter["field"]] < filter["value"]]
         elif filter["operator"] == "contains":
-            df = df[df[filter["field"]].str.contains(filter["value"], case=False)]
+            df = df[df[filter["field"]].str.contains(str(filter["value"]), case=False)]
         elif filter["operator"] == "isin":
             df = df[df[filter["field"]].isin(filter["value"], case=False)]
     return df
@@ -1137,13 +1137,26 @@ class PolMatters:
                 name = st.text_input(lang("matter"))
                 if name > "":
                     filters = add_filter(filters, "titel", name, "contains")
+            
+            # signatur
+            if "signatur" not in excluded_list:
+                signatur = st.text_input('Signatur')
+                if signatur > "":
+                    filters = add_filter(filters, "signatur", signatur, "contains")
 
             # year
-            if "year" not in excluded_list:
-                year_options = [lang("year")] + self.parent.year_options
-                year = st.selectbox(lang("committee_type"), options=year_options)
+            if "type" not in excluded_list:
+                year_options = [lang("all")] + self.parent.year_options
+                year = st.selectbox(lang("year"), options=year_options)
                 if year_options.index(year) > 0:
                     filters = add_filter(filters, "jahr", year)
+
+            # matter type
+            if "type" not in excluded_list:
+                type_options = [lang("all")] + self.parent.matter_options
+                matter_type = st.selectbox(lang("matter_type"), options=type_options)
+                if type_options.index(matter_type) > 0:
+                    filters = add_filter(filters, "geschaftstyp", matter_type)
 
             # political party
             if "party" not in excluded_list:
@@ -1182,6 +1195,7 @@ class PolMatters:
         df["beginn_datum"] = pd.to_datetime(df["beginn_datum"])
         df = add_year_date(df, "beginn_datum", "jahr_datum")
         df["jahr"] = df["beginn_datum"].dt.year.astype(int)
+        df["signatur"] = df["signatur"].astype(str)
         return df
 
     def select_item(self):
@@ -1384,6 +1398,7 @@ class Parliament:
             self.pol_matters_themes = list(df_matters["thema_1"].unique()) + list(
                 df_matters["thema_2"].unique()
             )
+            self.matter_options = list(df_matters["geschaftstyp"].unique())
 
             placeholder.write(lang("loading_committees"))
             df_memberships = get_table(Urls.MEMBERSHIPS.value)
