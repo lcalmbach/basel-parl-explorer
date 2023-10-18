@@ -370,6 +370,7 @@ class Bodies:
         st.subheader(
             f"{lang('parliament_committees')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
+        st.markdown(lang("body_table_help"))
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("uni_nr_gre").loc[
@@ -431,8 +432,12 @@ class Votations:
         df_results["Datum"] = pd.to_datetime(df_results["Datum"])
         self.results = df_results
         df_results = add_year_date(df_results, "Datum", "jahr_datum")
-
+        
         self.all_elements = self.get_elements(df_matters)
+        self.first_year = self.all_elements['jahr'].min()
+        self.last_year = self.all_elements['jahr'].max()
+        self.year_options = sorted(list(range(self.first_year, self.last_year + 1)), reverse=True)
+        self.type_options = sorted(list(self.all_elements['Typ'].unique()))
         self.filtered_elements = pd.DataFrame()
         # results by fraction and restult type
         self.settings_plot = {
@@ -465,8 +470,7 @@ class Votations:
                 filters = add_filter(filters, "Geschaeft", matter, "contains")
 
             # election year
-            year_options = self.parent.year_options
-            year_options = [lang("all")] + list(year_options)
+            year_options = [lang("all")] + list(self.year_options)
             year = st.selectbox(lang("year"), year_options)
             if year_options.index(year) > 0:
                 filters = add_filter(filters, "jahr", year)
@@ -476,6 +480,13 @@ class Votations:
             result = st.selectbox(lang("result"), result_options)
             if result_options.index(result) > 0:
                 filters = add_filter(filters, "Angenommen", result)
+            
+            # vote type
+            type_options = [lang("all")] + self.type_options
+            type = st.selectbox(lang("type"), type_options)
+            if type_options.index(type) > 0:
+                filters = add_filter(filters, "Typ", type)
+
         return filters
 
     def filter_results(self, filters, add_details=False):
@@ -563,6 +574,7 @@ class Votations:
             },
         ]
         st.subheader(f"{lang('votations')} ({len(df)}/{len(self.all_elements)})")
+        st.markdown(lang("votations_table_help"))
         sel_member = show_table(df, cols, settings)
         if len(sel_member) > 0:
             row = self.filtered_elements[
@@ -1020,6 +1032,7 @@ class Members:
         st.subheader(
             f"{lang('parliament_members')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
+        st.markdown(lang("member_table_help"))
         df = self.filtered_elements[fields].copy()
         sel_member = show_table(df, cols, settings)
         if len(sel_member) > 0:
@@ -1145,7 +1158,7 @@ class PolMatters:
                     filters = add_filter(filters, "signatur", signatur, "contains")
 
             # year
-            if "type" not in excluded_list:
+            if "year" not in excluded_list:
                 year_options = [lang("all")] + self.parent.year_options
                 year = st.selectbox(lang("year"), options=year_options)
                 if year_options.index(year) > 0:
@@ -1219,6 +1232,7 @@ class PolMatters:
         st.subheader(
             f"{lang('pol_initiatives')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
+        st.markdown(lang("matters_table_help"))
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("signatur").loc[
@@ -1353,6 +1367,7 @@ class Memberships:
         st.subheader(
             f"{lang('committee_members')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
+        st.markdown(lang("votations_table_help"))
         sel_member = show_table(self.filtered_elements[fields], cols, DEF_GRID_SETTING)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("uni_nr_gre").loc[
@@ -1387,7 +1402,7 @@ class Parliament:
             self.year_options = list(range(self.min_year, self.max_year + 1))
             self.members = Members(self, df_all_members)
 
-            self.party_options = list(df_all_members["partei_kname"].unique())
+            self.party_options = sorted(list(df_all_members["partei_kname"].dropna().unique()))
             self.electoral_district_options = list(
                 df_all_members["gr_wahlkreis"].unique()
             )

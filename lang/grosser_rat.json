@@ -94,8 +94,12 @@
     "parties": "Parteien",
     "percent_seats": "Prozent Sitze",
     "search_for": "Suche nach",
-    "found_documents": "Es wurden {} Dokumente gefunden, die den Suchkriterien entsprechen"
-
+    "found_documents": "Es wurden {} Dokumente gefunden, die den Suchkriterien entsprechen",
+    "member_table_help": "Klicke auf ein Mitglied in der Tabelle um mehr Informationen zu erhalten.",
+    "matters_table_help": "Klicke auf einen Vorstoss in der Tabelle um mehr Informationen zu erhalten.",
+    "votations_table_help": "Klicke auf eine Abstimmung in der Tabelle um mehr Informationen zu erhalten.",
+    "body_table_help": "Klicke auf ein Gremium in der Tabelle um mehr Informationen zu erhalten.",
+    "type": "Typ"
   },
   "de": {
     "info": "Info",
@@ -192,7 +196,12 @@
     "parties": "Parteien",
     "percent_seats": "Prozent Sitze",
     "search_for": "Suche nach",
-    "found_documents": "Es wurden {} Dokumente gefunden, die den Suchkriterien entsprechen"
+    "found_documents": "Es wurden {} Dokumente gefunden, die den Suchkriterien entsprechen",
+    "member_table_help": "Klicke auf ein Mitglied in der Tabelle um mehr Informationen zu erhalten.",
+    "matters_table_help": "Klicke auf einen Vorstoss in der Tabelle um mehr Informationen zu erhalten.",
+    "votations_table_help": "Klicke auf eine Abstimmung in der Tabelle um mehr Informationen zu erhalten.",
+    "body_table_help": "Klicke auf ein Gremium in der Tabelle um mehr Informationen zu erhalten.",
+    "type": "Typ"
   },
   "fr": {
     "info": "Info",
@@ -282,7 +291,14 @@
     "seats": "Si\u00e8ges",
     "seat_distribution_legend": "Depuis 2008, le nombre de si\u00e8ges au Grand Conseil est de 100. Auparavant, il y avait 130 si\u00e8ges. Pour une meilleure comparabilit\u00e9 de la r\u00e9partition des si\u00e8ges avec les \u00e9lections ant\u00e9rieures \u00e0 2008, vous pouvez s\u00e9lectionner l'option de r\u00e9partition des si\u00e8ges en pourcentage dans la s\u00e9lection au-dessus du graphique.",
     "parties": "Partis",
-    "percent_seats": "Pourcentage de si\u00e8ges"
+    "percent_seats": "Pourcentage de si\u00e8ges",
+    "search_for": "Suche nach",
+    "found_documents": "Es wurden {} Dokumente gefunden, die den Suchkriterien entsprechen",
+    "member_table_help": "Klicke auf ein Mitglied in der Tabelle um mehr Informationen zu erhalten.",
+    "matters_table_help": "Klicke auf einen Vorstoss in der Tabelle um mehr Informationen zu erhalten.",
+    "votations_table_help": "Klicke auf eine Abstimmung in der Tabelle um mehr Informationen zu erhalten.",
+    "body_table_help": "Klicke auf ein Gremium in der Tabelle um mehr Informationen zu erhalten.",
+    "type": "Typ"
   },
   "en": {
     "info": "Info",
@@ -368,6 +384,13 @@
     "seats": "Seats",
     "seat_distribution_legend": "Since 2008, the number of seats in the Grand Council has been 100. Before that, there were 130 seats. To better compare the seat distribution with elections before 2008, the option of percentage seat distribution can be selected in the selection above the graph.",
     "parties": "Parties",
-    "percent_seats": "Percentage of seats"
+    "percent_seats": "Percentage of seats",
+    "search_for": "Search",
+    "found_documents": "Es wurden {} Dokumente gefunden, die den Suchkriterien entsprechen",
+    "member_table_help": "Klicke auf ein Mitglied in der Tabelle um mehr Informationen zu erhalten.",
+    "matters_table_help": "Klicke auf einen Vorstoss in der Tabelle um mehr Informationen zu erhalten.",
+    "votations_table_help": "Klicke auf eine Abstimmung in der Tabelle um mehr Informationen zu erhalten.",
+    "body_table_help": "Klicke auf ein Gremium in der Tabelle um mehr Informationen zu erhalten.",
+    "type": "Typ"
   }
 }
