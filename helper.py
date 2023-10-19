@@ -196,6 +196,3 @@ def round_to_nearest(value, base):
         int: The rounded value.
     """
     return int(value / base / base) * base
-
-
-

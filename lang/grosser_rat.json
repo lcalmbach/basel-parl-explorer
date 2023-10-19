@@ -99,7 +99,10 @@
     "matters_table_help": "Klicke auf einen Vorstoss in der Tabelle um mehr Informationen zu erhalten.",
     "votations_table_help": "Klicke auf eine Abstimmung in der Tabelle um mehr Informationen zu erhalten.",
     "body_table_help": "Klicke auf ein Gremium in der Tabelle um mehr Informationen zu erhalten.",
-    "type": "Typ"
+    "type": "Typ",
+    "votation_date": "Abstimmungsdatum",
+    "yes": "Ja",
+    "no": "Nein"
   },
   "de": {
     "info": "Info",
@@ -162,6 +165,9 @@
     "body_short_name": "Gremiumsname (kurz)",
     "accepted": "Angenommen",
     "rejected": "Abgelehnt",
+    "absent": "Abwesend",
+    "abstention": "Enthaltung",
+    "presidial_vote": "Pr\u00e4sidiumsstimme",
     "result": "Resultat",
     "status": "Status",
     "no_votations": "Abstimmungen k\u00f6nnen nur f\u00fcr aktuell amtierende Mitglieder angezeigt werden.",
@@ -201,7 +207,10 @@
     "matters_table_help": "Klicke auf einen Vorstoss in der Tabelle um mehr Informationen zu erhalten.",
     "votations_table_help": "Klicke auf eine Abstimmung in der Tabelle um mehr Informationen zu erhalten.",
     "body_table_help": "Klicke auf ein Gremium in der Tabelle um mehr Informationen zu erhalten.",
-    "type": "Typ"
+    "type": "Typ",
+    "votation_date": "Abstimmungsdatum",
+    "yes": "Ja",
+    "no": "Nein"
   },
   "fr": {
     "info": "Info",
@@ -356,6 +365,9 @@
     "body_short_name": "Name of the committee (short)",
     "accepted": "Assumed",
     "rejected": "Rejected",
+    "absent": "Abwesend",
+    "abstention": "Enthaltung",
+    "presidial_vote": "Pr\u00e4sidiumsstimme",
     "result": "Result",
     "status": "Status",
     "no_votations": "Votes can only be displayed for currently serving members.",

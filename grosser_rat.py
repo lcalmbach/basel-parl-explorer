@@ -7,6 +7,7 @@ from lang import get_lang
 from helper import add_year_date, show_table, get_var
 from enum import Enum
 from plots import time_series_line, bar_chart
+
 # import boto3
 from whoosh.fields import Schema, TEXT, ID
 from whoosh import index
@@ -432,12 +433,20 @@ class Votations:
         df_results["Datum"] = pd.to_datetime(df_results["Datum"])
         self.results = df_results
         df_results = add_year_date(df_results, "Datum", "jahr_datum")
-        
+
         self.all_elements = self.get_elements(df_matters)
-        self.first_year = self.all_elements['jahr'].min()
-        self.last_year = self.all_elements['jahr'].max()
-        self.year_options = sorted(list(range(self.first_year, self.last_year + 1)), reverse=True)
-        self.type_options = sorted(list(self.all_elements['Typ'].unique()))
+        self.all_elements["datum_fmt"] = self.all_elements["Datum"].dt.strftime(
+            "%Y-%m-%d"
+        )
+        self.date_options = sorted(
+            self.all_elements["datum_fmt"].unique(), reverse=True
+        )
+        self.first_year = self.all_elements["jahr"].min()
+        self.last_year = self.all_elements["jahr"].max()
+        self.year_options = sorted(
+            list(range(self.first_year, self.last_year + 1)), reverse=True
+        )
+        self.type_options = sorted(list(self.all_elements["Typ"].unique()))
         self.filtered_elements = pd.DataFrame()
         # results by fraction and restult type
         self.settings_plot = {
@@ -475,12 +484,20 @@ class Votations:
             if year_options.index(year) > 0:
                 filters = add_filter(filters, "jahr", year)
 
-            # election year
+            # date
+            date_options = [lang("all")] + list(self.date_options)
+            date = st.selectbox(lang("votation_date"), date_options)
+            if date_options.index(date) > 0:
+                filters = add_filter(filters, "datum_fmt", date)
+
+            # result
             result_options = [lang("all"), lang("accepted"), lang("rejected")]
             result = st.selectbox(lang("result"), result_options)
-            if result_options.index(result) > 0:
-                filters = add_filter(filters, "Angenommen", result)
-            
+            if result == lang("accepted"):
+                filters = add_filter(filters, "Angenommen", lang("yes"))
+            elif result == lang("rejected"):
+                filters = add_filter(filters, "Angenommen", lang("no"))
+
             # vote type
             type_options = [lang("all")] + self.type_options
             type = st.selectbox(lang("type"), type_options)
@@ -504,6 +521,12 @@ class Votations:
         df["pzt_ja"] = df["Ja-Stimmen"] / (MEMBER_COUNT - df["Abwesende"]) * 100.0
         df["pzt_abwesend"] = df["Abwesende"] / MEMBER_COUNT * 100
         df["Angenommen"] = df["Ja-Stimmen"] > df["Nein-Stimmen"]
+        df["Angenommen"] = df.apply(
+            lambda row: lang("yes")
+            if row["Ja-Stimmen"] > row["Nein-Stimmen"]
+            else lang("no"),
+            axis=1,
+        )
         return df
 
     def get_member_votes(self, id):
@@ -523,7 +546,7 @@ class Votations:
         filters = self.get_filter()
         self.filtered_elements = filter(self.all_elements, filters)
         fields = [
-            "Datum",
+            "datum_fmt",
             "Geschaeft",
             "Abstimmungsnummer",
             "Typ",
@@ -573,6 +596,7 @@ class Votations:
                 "format": None,
             },
         ]
+        df = df.sort_values(by=df.columns[0], ascending=False)
         st.subheader(f"{lang('votations')} ({len(df)}/{len(self.all_elements)})")
         st.markdown(lang("votations_table_help"))
         sel_member = show_table(df, cols, settings)
@@ -1079,7 +1103,7 @@ class PolMatter:
             ]
             df = self.data[fields].copy()
             df["status"] = [
-                lang("in_progress") if x == "A" else lang("closed")
+                lang("in_progress") if x == "B" else lang("closed")
                 for x in df["status"]
             ]
             df.columns = [
@@ -1113,6 +1137,10 @@ class PolMatters:
         self.parent = parent
         self.all_elements = self.get_elements(df)
         self.first_year = self.all_elements["beginn_datum"].dt.year.min()
+        self.last_year = self.all_elements["beginn_datum"].dt.year.max()
+        self.year_options = sorted(
+            list(range(self.first_year, self.last_year + 1)), reverse=True
+        )
         self.theme_options = self.get_themes(self.all_elements)
         self.settings_plot = {
             "x": "jahr_datum",
@@ -1150,16 +1178,16 @@ class PolMatters:
                 name = st.text_input(lang("matter"))
                 if name > "":
                     filters = add_filter(filters, "titel", name, "contains")
-            
+
             # signatur
             if "signatur" not in excluded_list:
-                signatur = st.text_input('Signatur')
+                signatur = st.text_input("Signatur")
                 if signatur > "":
                     filters = add_filter(filters, "signatur", signatur, "contains")
 
             # year
             if "year" not in excluded_list:
-                year_options = [lang("all")] + self.parent.year_options
+                year_options = [lang("all")] + self.year_options
                 year = st.selectbox(lang("year"), options=year_options)
                 if year_options.index(year) > 0:
                     filters = add_filter(filters, "jahr", year)
@@ -1402,7 +1430,9 @@ class Parliament:
             self.year_options = list(range(self.min_year, self.max_year + 1))
             self.members = Members(self, df_all_members)
 
-            self.party_options = sorted(list(df_all_members["partei_kname"].dropna().unique()))
+            self.party_options = sorted(
+                list(df_all_members["partei_kname"].dropna().unique())
+            )
             self.electoral_district_options = list(
                 df_all_members["gr_wahlkreis"].unique()
             )
