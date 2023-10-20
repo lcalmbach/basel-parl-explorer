@@ -136,16 +136,18 @@ def time_series_bar(df, settings):
 
 
 def time_series_line(df, settings):
+    if "x_format" not in settings:
+        settings["format_x"] = "%Y-%m"
     if "x_domain" in settings:
         xax = alt.X(
             f"{settings['x']}:T",
-            title=settings["x_title"],
+            axis=alt.Axis(title=settings["x_title"], format=settings["x_format"]),
             scale=alt.Scale(domain=settings["x_domain"]),
         )
     else:
         xax = alt.X(
             f"{settings['x']}:T",
-            title=settings["x_title"],
+            axis=alt.Axis(title=settings["x_title"], format=settings["x_format"])
         )
 
     if settings["y_domain"][0] != settings["y_domain"][1]:

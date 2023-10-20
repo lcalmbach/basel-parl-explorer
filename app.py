@@ -7,10 +7,10 @@ from streamlit_option_menu import option_menu
 from lang import get_used_languages, init_lang_dict_complete, get_lang
 from grosser_rat import Parliament
 
-__version__ = "0.0.10"
+__version__ = "0.0.11"
 __author__ = "Lukas Calmbach"
 __author_email__ = "lcalmbach@gmail.com"
-VERSION_DATE = "2023-10-19"
+VERSION_DATE = "2023-10-20"
 APP_EMOJI = "🏛️"
 APP_NAME = "BaselParlExplorer"
 GIT_REPO = ""
@@ -127,33 +127,6 @@ def show_app_info():
         st.markdown(lang["app_info"], unsafe_allow_html=True)
 
 
-def update_matters():
-    """
-    Updates the matter URLs in the matter_url.csv file with the corresponding summaries from the summaries.csv file.
-
-    Reads the matter URLs from the matter_url.csv file and extracts the filename from the URL. Then, reads the summaries
-    from the summaries.csv file and merges them with the matter URLs based on the filename. Finally, writes the updated
-    matter URLs to the matter_url.csv file.
-
-    Args:
-        None
-
-    Returns:
-        None
-    """
-    from urllib.parse import urlparse
-
-    df_matter = pd.read_csv(DATA + "matter_url.csv", sep=";")
-    df_matter = df_matter[["signatur", "pdf_file_url"]]
-    # Extract the path and split it to get the filename
-    df_matter["key"] = df_matter["pdf_file_url"].apply(
-        lambda x: urlparse(x).path.split("/")[-1]
-    )
-    df_summaries = pd.read_csv(DATA + "summaries.csv", sep="|")
-    df_matter = df_matter.merge(df_summaries, on="key", how="left")
-    df_matter.to_csv(DATA + "matter_url.csv", sep=";", index=False)
-
-
 def main() -> None:
     """
     This function runs an app that classifies text data. Depending on the user's
@@ -168,7 +141,7 @@ def main() -> None:
     global grosser_rat
 
     init()
-    update_matters()
+    # update_matters()
     lang = get_lang(PAGE)
     lottie_search_names, ok = get_lottie()
     if ok:

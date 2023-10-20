@@ -4,15 +4,15 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from lang import get_lang
-from helper import add_year_date, show_table, get_var
+from helper import add_year_date, show_table, show_download_button
 from enum import Enum
 from plots import time_series_line, bar_chart
+from urllib.parse import urlparse
 
 # import boto3
 from whoosh.fields import Schema, TEXT, ID
 from whoosh import index
 from whoosh.qparser import QueryParser
-import os
 
 PAGE = __name__
 MEMBER_COUNT = 100  # parliment members since 2008
@@ -31,6 +31,7 @@ class Urls(Enum):
     VOTATIONS = 100186
     MEMBERSHIPS = 100308
     DOCUMENTS = 100313
+    BODIES = 100310
 
 
 def lang(text):
@@ -95,9 +96,6 @@ def filter(df: pd.DataFrame, filters: list):
     return df
 
 
-import pandas as pd
-
-
 def get_table(table_nr: int):
     """
     Retrieves a table from the Basel-Stadt Open Data API and returns it as a pandas DataFrame.
@@ -115,7 +113,7 @@ def get_table(table_nr: int):
 
 
 class Documents:
-    def __init__(self, parent, docs_df):
+    def __init__(self, parent, docs_df: pd.DataFrame, summaries: pd.DataFrame):
         """
         Initializes a Documents object.
 
@@ -124,7 +122,7 @@ class Documents:
             docs_df: A pandas DataFrame containing the documents to be indexed.
         """
         self.parent = parent
-        self.all_elements = self.get_elements(docs_df)
+        self.all_elements = self.get_elements(docs_df, summaries)
         # self.s3 = boto3.resource(
         #     "s3",
         #     aws_access_key_id=get_var("aws_access_key_id"),
@@ -132,7 +130,7 @@ class Documents:
         #     region_name="us-east-1",
         # )
 
-    def get_elements(self, df):
+    def get_elements(self, df, summaries):
         """
         Gets the elements from a pandas DataFrame.
 
@@ -142,6 +140,14 @@ class Documents:
         Returns:
             A pandas DataFrame containing the specified fields.
         """
+
+        def transform_number(number):
+            # Convert the number to a string
+            number_str = str(number)
+            num_zeros = 12 - len(number_str)
+            transformed_number = "0" * num_zeros + number_str + ".pdf"
+            return transformed_number
+
         fields = [
             "dokudatum",
             "dok_laufnr",
@@ -151,10 +157,16 @@ class Documents:
             "titel_ges",
             "url_ges",
             "url_dok",
+            "key",
+            "summary",
         ]
-        df = df[fields]
+        df["signatur_ges"] = df["signatur_ges"].astype(str)
         df["dokudatum"] = pd.to_datetime(df["dokudatum"])
         df["year"] = df["dokudatum"].dt.year
+
+        df["key"] = df["dok_laufnr"].apply(transform_number)
+        df = df.merge(summaries, on="key", how="left")
+
         return df[fields]
 
     def filter(self, filters):
@@ -250,8 +262,8 @@ class Body:
     def __init__(self, parent, row, id):
         self.parent = parent
         self.data = row
-        self.name = row["name_gre"]
-        self.short_name = row["kurzname_gre"]
+        self.name = row["name"]
+        self.short_name = row["kurzname"]
         self.type = row["gremientyp"]
         self.id = id
         self.members = self.parent.bodies.get_members(self.id)
@@ -287,9 +299,9 @@ class Body:
 
 
 class Bodies:
-    def __init__(self, parent, df_bodies, df_urls):
+    def __init__(self, parent, df_memberships, df_urls, df_bodies):
         self.parent = parent
-        self.memberships = df_bodies
+        self.memberships = df_memberships
         self.all_elements = self.get_elements(df_bodies)
         self.filtered_elements = pd.DataFrame()
         self.url_dict = dict(zip(list(df_urls["key"]), list(df_urls["url"])))
@@ -316,12 +328,20 @@ class Bodies:
             body_type = st.selectbox(lang("committee_type"), options=body_type_options)
             if body_type_options.index(body_type) > 0:
                 filters = add_filter(filters, "gremientyp", body_type)
+
+            # aktiv
+            status_options = [lang("all"), lang("active"), lang("inactive")]
+            status = st.selectbox(lang("active_inactive"), options=status_options)
+            if status == lang("active"):
+                filters = add_filter(filters, "aktiv", "Ja")
+            elif status == lang("inactive"):
+                filters = add_filter(filters, "aktiv", "Nein")
         return filters
 
     def get_elements(self, df):
-        fields = ["uni_nr_gre", "kurzname_gre", "name_gre", "gremientyp"]
-        # add and remove fields here
-        df = df[fields].drop_duplicates()
+        fields = ["ist_aktuelles_gremium", "kurzname", "name", "gremientyp", "uni_nr"]
+        df = df[fields]
+        df.columns = ["aktiv", "kurzname", "name", "gremientyp", "uni_nr"]
         return df
 
     def get_president(self, id):
@@ -355,29 +375,39 @@ class Bodies:
             "uni_nr_gre",
         ]
         df = self.memberships[fields][self.memberships["uni_nr_gre"] == id]
+        df["aktiv"] = df["ende_mit"].apply(lambda x: "Ja" if pd.isnull(x) else "Nein")
         return df
 
     def select_item(self):
         filters = self.get_filter()
         self.filtered_elements = filter(self.all_elements, filters)
-        fields = ["kurzname_gre", "name_gre", "gremientyp", "uni_nr_gre"]
+
         settings = {
             "fit_columns_on_grid_load": False,
             "height": 400,
             "selection_mode": "single",
             "field": "bodies",
         }
-        cols = []
+        cols = [
+            {
+                "name": "uni_nr",
+                "type": "int",
+                "precision": None,
+                "hide": True,
+                "width": None,
+                "format": None,
+            },
+        ]
         st.subheader(
             f"{lang('parliament_committees')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
         st.markdown(lang("body_table_help"))
-        sel_member = show_table(self.filtered_elements[fields], cols, settings)
+        sel_member = show_table(self.filtered_elements, cols, settings)
+        cfg = {"filename": f"{lang('bodies')}.txt", "button_text": lang("download")}
+        show_download_button(self.filtered_elements, cfg)
         if len(sel_member) > 0:
-            row = self.filtered_elements.set_index("uni_nr_gre").loc[
-                sel_member["uni_nr_gre"]
-            ]
-            self.current_body = Body(self.parent, row, sel_member["uni_nr_gre"])
+            row = self.filtered_elements.set_index("uni_nr").loc[sel_member["uni_nr"]]
+            self.current_body = Body(self.parent, row, sel_member["uni_nr"])
             self.current_body.show_detail()
 
 
@@ -452,6 +482,7 @@ class Votations:
         self.settings_plot = {
             "x": "jahr_datum",
             "x_title": lang("year"),
+            "x_format": "%Y",
             "y": "cnt_p_member",
             "y_title": "Anzahl pro Mitglied",
             "tooltip": ["jahr_datum", "cnt_p_member"],
@@ -600,6 +631,8 @@ class Votations:
         st.subheader(f"{lang('votations')} ({len(df)}/{len(self.all_elements)})")
         st.markdown(lang("votations_table_help"))
         sel_member = show_table(df, cols, settings)
+        cfg = {"filename": f"{lang('votations_short')}.txt", "button_text": lang("download")}
+        show_download_button(df, cfg)
         if len(sel_member) > 0:
             row = self.filtered_elements[
                 self.filtered_elements["id"] == sel_member["id"]
@@ -642,6 +675,7 @@ class Votations:
             )
             with cols[0]:
                 group_options = self.results["Fraktion"].unique()
+                group_options = [x for x in group_options if x != '=']
                 self.settings_plot["groups"] = st.multiselect(
                     label=lang("pol_groups"),
                     options=group_options,
@@ -677,10 +711,10 @@ class Votations:
                 "title"
             ] = f"{title_dict[self.settings_plot['result']]} {lang('per_member_and_fraction')}"
         self.settings_plot["y_domain"] = [0, df["cnt_p_member"].max()]
-        # self.settings_plot["x_domain"] = [
-        #    df["jahr_datum"].min(),
-        #    df["jahr_datum"].max(),
-        # ]
+        #self.settings_plot["x_domain"] = [
+        #   int(df["jahr_datum"].min()),
+        #   int(df["jahr_datum"].max()),
+        #]
         self.settings_plot["tooltip"] = [
             "Jahr",
             self.settings_plot["y"],
@@ -693,8 +727,9 @@ class Votations:
             show_settings()
         with tabs[0]:
             time_series_line(df, self.settings_plot)
-            st.write(
-                lang("figure0_legend").format(title_dict[self.settings_plot["result"]])
+            text = lang("figure0_legend").format(title_dict[self.settings_plot["result"]]) + ' ' + lang("explain_absences_plot")
+            st.markdown(
+                text
             )
 
 
@@ -1047,7 +1082,6 @@ class Members:
             "uni_nr",
         ]
         settings = {
-            "fit_columns_on_grid_load": False,
             "height": 400,
             "selection_mode": "single",
             "field": "members",
@@ -1059,6 +1093,8 @@ class Members:
         st.markdown(lang("member_table_help"))
         df = self.filtered_elements[fields].copy()
         sel_member = show_table(df, cols, settings)
+        cfg = {"filename": f"{lang('members')}.txt", "button_text": lang("download")}
+        show_download_button(df, cfg)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("uni_nr").loc[sel_member["uni_nr"]]
             self.current_member = Member(self.parent, row, sel_member["uni_nr"])
@@ -1081,10 +1117,11 @@ class PolMatter:
         self.end_date = row["ende"]
         self.url_matter = row["geschaft"]
         self.url_doc = row["pdf_file_url"]
-        self.summary = row["summary"]
+
         self.documents = self.parent.documents.filter(
             [{"field": "signatur_ges", "value": signatur}]
         ).sort_values(by="dokudatum")
+        self.summary = self.documents.iloc[0]["summary"]
 
     def show_detail(self):
         st.markdown(f"{lang('matter')}: **{self.title}**")
@@ -1102,6 +1139,7 @@ class PolMatter:
                 "summary",
             ]
             df = self.data[fields].copy()
+            df.iloc[0]["summary"] = self.summary
             df["status"] = [
                 lang("in_progress") if x == "B" else lang("closed")
                 for x in df["status"]
@@ -1122,8 +1160,9 @@ class PolMatter:
             table = df.to_html(index=False)
             st.markdown(table, unsafe_allow_html=True)
             st.write("")
+            st.markdown(f"<sub>{lang('summary_ki_generated')}</sub>", unsafe_allow_html=True)
             st.link_button(
-                lang("matter"), self.url_matter, help=lang("more_info_pol_matter")
+                f"🔗{lang('matter')}", self.url_matter, help=lang("more_info_pol_matter")
             )
         with tabs[1]:
             text = ""
@@ -1232,36 +1271,52 @@ class PolMatters:
 
     def get_elements(self, df):
         df_urls = pd.read_csv(DATA + "matter_url.csv", sep=";")
+        df["signatur"] = df["signatur"].astype(str)
+        df_urls["signatur"] = df_urls["signatur"].astype(str)
         df = df.merge(df_urls, on="signatur", how="left")
         df["beginn_datum"] = pd.to_datetime(df["beginn_datum"])
         df = add_year_date(df, "beginn_datum", "jahr_datum")
         df["jahr"] = df["beginn_datum"].dt.year.astype(int)
-        df["signatur"] = df["signatur"].astype(str)
+
         return df
 
     def select_item(self):
         filters = self.get_filter()
         self.filtered_elements = filter(self.all_elements, filters)
+        self.filtered_elements["datum"] = self.filtered_elements[
+            "beginn_datum"
+        ].dt.strftime("%d.%m.%Y")
         fields = [
-            "beginn_datum",
+            "datum",
             "status",
             "signatur",
             "titel",
             "urheber",
             "partei",
+            "beginn_datum",
         ]
         settings = {
-            "fit_columns_on_grid_load": False,
             "height": 400,
             "selection_mode": "single",
             "field": "pol_matters",
         }
-        cols = []
+        cols = [
+            {
+                "name": "beginn_datum",
+                "hide": True,
+                "width": 100,
+                "precision": 0,
+                "type": "date",
+                format: "%d.%m.%Y",
+            }
+        ]
         st.subheader(
             f"{lang('pol_initiatives')} ({len(self.filtered_elements)}/{len(self.all_elements)})"
         )
         st.markdown(lang("matters_table_help"))
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
+        cfg = {"filename": f"{lang('pol_matters')}.txt", "button_text": lang("download")}
+        show_download_button(self.filtered_elements, cfg)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("signatur").loc[
                 sel_member["signatur"]
@@ -1371,6 +1426,9 @@ class Memberships:
     def get_elements(self, df):
         return df
 
+    def get_filter(self, df, filters, parent):
+        return df
+    
     def select_item(self):
         filters = [
             "activ_member",
@@ -1397,6 +1455,8 @@ class Memberships:
         )
         st.markdown(lang("votations_table_help"))
         sel_member = show_table(self.filtered_elements[fields], cols, DEF_GRID_SETTING)
+        cfg = {"filename": f"{lang('members')}.txt", "button_text": lang("download")}
+        show_download_button(self.filtered_elements, cfg)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("uni_nr_gre").loc[
                 sel_member["uni_nr_gre"]
@@ -1434,7 +1494,7 @@ class Parliament:
                 list(df_all_members["partei_kname"].dropna().unique())
             )
             self.electoral_district_options = list(
-                df_all_members["gr_wahlkreis"].unique()
+                df_all_members["gr_wahlkreis"].dropna().unique()
             )
 
             placeholder.write(lang("loading_matters"))
@@ -1451,7 +1511,8 @@ class Parliament:
 
             # holds urls from grosserrat.bs.ch for active committees
             df_url_bodies = pd.read_csv(DATA + "committee_url.csv", sep=";")
-            self.bodies = Bodies(self, df_memberships, df_url_bodies)
+            df_bodies = get_table(Urls.BODIES.value)
+            self.bodies = Bodies(self, df_memberships, df_url_bodies, df_bodies)
             self.body_type_options = list(df_memberships["gremientyp"].unique())
             df_bodies = (
                 df_memberships[["kurzname_gre", "name_gre"]].drop_duplicates().dropna()
@@ -1469,7 +1530,8 @@ class Parliament:
 
             placeholder.write(lang("loading_documents"))
             df_docs = get_table(Urls.DOCUMENTS.value)
-            self.documents = Documents(self, df_docs)
+            df_summaries = pd.read_csv(DATA + "summaries.csv", sep="|")
+            self.documents = Documents(self, df_docs, df_summaries)
 
             placeholder.write(lang("loading_votations"))
             # takes too much time, 135 MB as of 10/23, use votations.py to preprocess

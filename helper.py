@@ -47,7 +47,7 @@ def add_year_date(df: pd.DataFrame, date_column: str, year_date_col: str):
     Returns:
         pd.DataFrame: The original DataFrame with the new year-end date column added.
     """
-    df[year_date_col] = df[date_column].dt.year.astype(str) + "-12-31"
+    df[year_date_col] = df[date_column].dt.year.astype(str) + "-07-15"
     df[year_date_col] = pd.to_datetime(df[year_date_col])
     return df
 
@@ -102,7 +102,7 @@ def show_download_button(df: pd.DataFrame, cfg: Dict = {}) -> None:
 
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button(
-        label=cfg.get("button_text", "Download CSV"),
+        label=f"⬇️{cfg.get('button_text', 'Download CSV')}",
         data=csv,
         file_name=cfg["filename"],
         mime="text/csv",
@@ -161,7 +161,7 @@ def show_table(df: pd.DataFrame, cols=[], settings={}):
         fit_columns_on_grid_load=settings["fit_columns_on_grid_load"],
         allow_unsafe_jscode=False,
         enable_enterprise_modules=False,
-        # key=settings["key"],
+        # filterable=False
     )
     selected = grid_response["selected_rows"]
     if selected:
