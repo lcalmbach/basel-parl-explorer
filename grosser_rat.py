@@ -3,13 +3,12 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from lang import get_lang
-from helper import add_year_date, show_table, show_download_button
+from utils.lang import get_lang
+from utils.helper import add_year_date, show_table, show_download_button
 from enum import Enum
-from plots import time_series_line, bar_chart
-from urllib.parse import urlparse
+from utils.plots import time_series_line, bar_chart
 
-# import boto3
+# import boto3 # use when accessing text files on S3
 from whoosh.fields import Schema, TEXT, ID
 from whoosh import index
 from whoosh.qparser import QueryParser
@@ -17,6 +16,7 @@ from whoosh.qparser import QueryParser
 PAGE = __name__
 MEMBER_COUNT = 100  # parliment members since 2008
 DATA = "./data/"  # location of local data files
+OGD_TABLE_URL = "https://data.bs.ch/api/explore/v2.1/catalog/datasets/{}/exports/csv?lang=de&timezone=Europe%2FBerlin&use_labels=false&delimiter=%3B"
 DEF_GRID_SETTING = {
     "fit_columns_on_grid_load": True,
     "height": 400,
@@ -98,7 +98,8 @@ def filter(df: pd.DataFrame, filters: list):
 
 def get_table(table_nr: int):
     """
-    Retrieves a table from the Basel-Stadt Open Data API and returns it as a pandas DataFrame.
+    Retrieves a table from the Basel-Stadt Open Data API and returns it as a
+    pandas DataFrame.
 
     Args:
         table_nr (int): The ID of the table to retrieve.
@@ -107,7 +108,7 @@ def get_table(table_nr: int):
         pandas.DataFrame: The retrieved table as a pandas DataFrame.
     """
 
-    URL = f"https://data.bs.ch/api/explore/v2.1/catalog/datasets/{table_nr}/exports/csv?lang=de&timezone=Europe%2FBerlin&use_labels=false&delimiter=%3B"
+    URL = OGD_TABLE_URL.format(table_nr)
     df = pd.read_csv(URL, sep=";")
     return df
 
@@ -631,7 +632,10 @@ class Votations:
         st.subheader(f"{lang('votations')} ({len(df)}/{len(self.all_elements)})")
         st.markdown(lang("votations_table_help"))
         sel_member = show_table(df, cols, settings)
-        cfg = {"filename": f"{lang('votations_short')}.txt", "button_text": lang("download")}
+        cfg = {
+            "filename": f"{lang('votations_short')}.txt",
+            "button_text": lang("download"),
+        }
         show_download_button(df, cfg)
         if len(sel_member) > 0:
             row = self.filtered_elements[
@@ -675,7 +679,7 @@ class Votations:
             )
             with cols[0]:
                 group_options = self.results["Fraktion"].unique()
-                group_options = [x for x in group_options if x != '=']
+                group_options = [x for x in group_options if x != "="]
                 self.settings_plot["groups"] = st.multiselect(
                     label=lang("pol_groups"),
                     options=group_options,
@@ -692,7 +696,7 @@ class Votations:
                 if (old_groups != self.settings_plot["groups"]) | (
                     old_result != self.settings_plot["result"]
                 ):
-                    st.experimental_rerun()
+                    st.rerun()
 
         with st.sidebar:
             df_fract_members = get_members_per_fraction()
@@ -711,10 +715,10 @@ class Votations:
                 "title"
             ] = f"{title_dict[self.settings_plot['result']]} {lang('per_member_and_fraction')}"
         self.settings_plot["y_domain"] = [0, df["cnt_p_member"].max()]
-        #self.settings_plot["x_domain"] = [
+        # self.settings_plot["x_domain"] = [
         #   int(df["jahr_datum"].min()),
         #   int(df["jahr_datum"].max()),
-        #]
+        # ]
         self.settings_plot["tooltip"] = [
             "Jahr",
             self.settings_plot["y"],
@@ -727,10 +731,12 @@ class Votations:
             show_settings()
         with tabs[0]:
             time_series_line(df, self.settings_plot)
-            text = lang("figure0_legend").format(title_dict[self.settings_plot["result"]]) + ' ' + lang("explain_absences_plot")
-            st.markdown(
-                text
+            text = (
+                lang("figure0_legend").format(title_dict[self.settings_plot["result"]])
+                + " "
+                + lang("explain_absences_plot")
             )
+            st.markdown(text)
 
 
 class Member:
@@ -764,9 +770,22 @@ class Member:
         self.votations = self.parent.votations.filter_results(
             [
                 {"field": "Name", "value": self.full_name},
-                {"field": "Sitz Nr.", "value": self.place_id},
             ],
             add_details=True,
+        )
+        self.votation_meetings_no = len(self.votations["datum_fmt"].unique())
+        self.votation_num = len(self.votations)
+        self.votation_yes = len(
+            self.votations[self.votations["Entscheid Mitglied"] == "J"]
+        )
+        self.votation_no = len(
+            self.votations[self.votations["Entscheid Mitglied"] == "N"]
+        )
+        self.votation_abs = len(
+            self.votations[self.votations["Entscheid Mitglied"] == "A"]
+        )
+        self.votation_abst = len(
+            self.votations[self.votations["Entscheid Mitglied"] == "E"]
         )
 
     def show_detail(self):
@@ -799,7 +818,28 @@ class Member:
             df = df.T.reset_index()
             df.columns = lang("field_value_cols")
             df.dropna(inplace=True)
+            if self.votation_num > 0:
+                df_votations = pd.DataFrame(
+                    {
+                        "Feld": [
+                            "Anzahl mögliche Abstimmungen",
+                            "Anzahl Ja",
+                            "Anzahl Nein",
+                            "Anzahl Enthaltungen",
+                            "Anzahl Abwesend",
+                        ],
+                        "Wert": [
+                            self.votation_num,
+                            f"{self.votation_yes}  ({self.votation_yes/self.votation_num*100:.0f}%)",
+                            f"{self.votation_no} ({self.votation_no/self.votation_num*100:.0f}%)",
+                            f"{self.votation_abst} ({self.votation_abst/self.votation_num*100:.0f}%)",
+                            f"{self.votation_abs} ({self.votation_abs/self.votation_num*100:.0f}%)",
+                        ],
+                    }
+                )
+                df = pd.concat((df, df_votations))
             table = df.to_html(index=False)
+
             st.markdown(table, unsafe_allow_html=True)
         with tabs[1]:
             fields = ["signatur", "geschaftstyp", "titel", "beginn_datum", "ende"]
@@ -1057,15 +1097,17 @@ class Members:
         ]
 
         df = df_members[fields]
-        df["gr_beginn"] = pd.to_datetime(df["gr_beginn"])
-        df["gr_ende"] = pd.to_datetime(df["gr_ende"])
-        df["wahljahr"] = df["gr_beginn"].dt.year.astype(int)
-        df["austritt"] = df["gr_ende"].dt.year.fillna(0).astype(int)
-        df["gr_sitzplatz"] = df["gr_sitzplatz"].fillna(0).astype(int)
-        df["geschlecht"] = ["M" if x == "Herr" else "F" for x in df["anrede"]]
-        df["active_member"] = [
-            True if x == "Ja" else False for x in df["ist_aktuell_grossrat"]
-        ]
+        df = df.assign(gr_beginn=pd.to_datetime(df["gr_beginn"]))
+        df = df.assign(gr_ende=pd.to_datetime(df["gr_ende"]))
+        df = df.assign(wahljahr=df["gr_beginn"].dt.year.fillna(0).astype(int))
+        df = df.assign(austritt=df["gr_ende"].dt.year.fillna(0).astype(int))
+        df = df.assign(gr_sitzplatz=df["gr_sitzplatz"].fillna(0).astype(int))
+        df = df.assign(geschlecht=["M" if x == "Herr" else "F" for x in df["anrede"]])
+        df = df.assign(
+            active_member=[
+                True if x == "Ja" else False for x in df["ist_aktuell_grossrat"]
+            ]
+        )
         return df
 
     def select_item(self):
@@ -1160,7 +1202,9 @@ class PolMatter:
             table = df.to_html(index=False)
             st.markdown(table, unsafe_allow_html=True)
             st.write("")
-            st.markdown(f"<sub>{lang('summary_ki_generated')}</sub>", unsafe_allow_html=True)
+            st.markdown(
+                f"<sub>{lang('summary_ki_generated')}</sub>", unsafe_allow_html=True
+            )
             st.link_button(
                 f"🔗{lang('matter')}", self.url_matter, help=lang("more_info_pol_matter")
             )
@@ -1315,7 +1359,10 @@ class PolMatters:
         )
         st.markdown(lang("matters_table_help"))
         sel_member = show_table(self.filtered_elements[fields], cols, settings)
-        cfg = {"filename": f"{lang('pol_matters')}.txt", "button_text": lang("download")}
+        cfg = {
+            "filename": f"{lang('pol_matters')}.txt",
+            "button_text": lang("download"),
+        }
         show_download_button(self.filtered_elements, cfg)
         if len(sel_member) > 0:
             row = self.filtered_elements.set_index("signatur").loc[
@@ -1428,7 +1475,7 @@ class Memberships:
 
     def get_filter(self, df, filters, parent):
         return df
-    
+
     def select_item(self):
         filters = [
             "activ_member",

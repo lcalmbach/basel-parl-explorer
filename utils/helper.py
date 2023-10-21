@@ -6,7 +6,6 @@ import string
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode, GridUpdateMode
 import fitz
 import requests
-from typing import Dict
 
 
 LOCAL_HOST = "liestal"
@@ -79,7 +78,7 @@ def read_pdf_from_url(url: str):
         raise Exception(f"Failed to download PDF. Status code: {response.status_code}")
 
 
-def show_download_button(df: pd.DataFrame, cfg: Dict = {}) -> None:
+def show_download_button(df: pd.DataFrame, cfg: dict = {}) -> None:
     """
     Displays a download button for a given Pandas DataFrame.
 

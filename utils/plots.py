@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-from helper import round_to_nearest
+from utils.helper import round_to_nearest
 
 
 def line_chart(df, settings):

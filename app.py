@@ -4,18 +4,18 @@ from streamlit_lottie import st_lottie
 import requests
 from streamlit_option_menu import option_menu
 
-from lang import get_used_languages, init_lang_dict_complete, get_lang
+from utils.lang import get_used_languages, init_lang_dict_complete, get_lang
 from grosser_rat import Parliament
 
-__version__ = "0.0.11"
+__version__ = "0.0.12"
 __author__ = "Lukas Calmbach"
 __author_email__ = "lcalmbach@gmail.com"
-VERSION_DATE = "2023-10-20"
+VERSION_DATE = "2023-10-21"
 APP_EMOJI = "🏛️"
 APP_NAME = "BaselParlExplorer"
-GIT_REPO = ""
+GIT_REPO = "https://github.com/lcalmbach/basel-parl-explorer"
 DATA = "./data/"
-STATIC = "./static/"
+ASSETS = "./assets/"
 
 PAGE = "app"
 LOTTIE_URL = "https://lottie.host/b3511e74-ab52-49a1-8105-7a6a49f00d4b/aDXvTKDGIX.json"
@@ -121,7 +121,7 @@ def show_app_info():
     """
     cols = st.columns([1, 10, 1])
     with cols[1]:
-        st.image(STATIC + "info_app_wide.jpg")
+        st.image(ASSETS + "info_app_wide.jpg")
         st.write("")
         st.header(f"{APP_EMOJI}{APP_NAME}")
         st.markdown(lang["app_info"], unsafe_allow_html=True)
