@@ -7,7 +7,7 @@ from streamlit_option_menu import option_menu
 from utils.lang import get_used_languages, init_lang_dict_complete, get_lang
 from grosser_rat import Parliament
 
-__version__ = "0.0.12"
+__version__ = "0.1.0"
 __author__ = "Lukas Calmbach"
 __author_email__ = "lcalmbach@gmail.com"
 VERSION_DATE = "2023-10-21"
@@ -58,8 +58,8 @@ def get_impressum():
     {version}: {__version__} ({VERSION_DATE})<br>
     {powered_by} <a href="https://streamlit.io/">Streamlit</a> and 
     <a href="https://platform.openai.com/">OpenAI API</a><br> 
-    <a href="{GIT_REPO}">git-repo</a><br> 
-    {translation} <a href="https://lcalmbach-gpt-translate-app-i49g8c.streamlit.app/">PolyglotGPT</a>
+    <a href="{GIT_REPO}">git-repo</a><br>
+    {translation} (<a href="https://lcalmbach-gpt-translate-app-i49g8c.streamlit.app/">PolyglotGPT</a>).
     </small></div>
     """
     return info
@@ -119,7 +119,7 @@ def show_app_info():
     uses the st.expander container to create an expandable section for the
     information. Inside the expander, displays the input and output format.
     """
-    cols = st.columns([1, 10, 1])
+    cols = st.columns([2, 10, 2])
     with cols[1]:
         st.image(ASSETS + "info_app_wide.jpg")
         st.write("")
@@ -184,7 +184,7 @@ def main() -> None:
     elif menu_action == menu_options[5]:
         st.session_state.grosser_rat.select_plot()
     display_language_selection()
-
+    
     st.sidebar.markdown(get_impressum(), unsafe_allow_html=True)
 
 

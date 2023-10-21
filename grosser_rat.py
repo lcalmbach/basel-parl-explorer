@@ -822,11 +822,11 @@ class Member:
                 df_votations = pd.DataFrame(
                     {
                         "Feld": [
-                            "Anzahl mögliche Abstimmungen",
-                            "Anzahl Ja",
-                            "Anzahl Nein",
-                            "Anzahl Enthaltungen",
-                            "Anzahl Abwesend",
+                            lang("votes_possible"),
+                            lang("votes_yes"),
+                            lang("votes_no"),
+                            lang("votes_abstention"),
+                            lang("votes_absent"),
                         ],
                         "Wert": [
                             self.votation_num,

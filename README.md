@@ -46,7 +46,7 @@ The BPE application is designed to be user-friendly. The sidebar menu provides a
 - **Graphical Analyses**: Explore various graphical analyses related to the entities mentioned above.
 
 ## Acknowledgments
-I would like to express my gratitude to the Parliament of Basel for providing access to data related to its activities on its [website](https://grosserrat.bs.ch/) and the open data portal [data.bs.ch](https://data.bs.ch/). Special thanks to Member of Parliament Urgese and the Opendata.bs team for their valuable feedback and assistance in identifying issues within the app.
+I would like to express my gratitude to the Parliament of Basel for providing access to data related to its activities on its [website](https://grosserrat.bs.ch/) and the open data portal [data.bs.ch](https://data.bs.ch/). Special thanks to Member of Parliament Luca Urgese and the Opendata.bs team for their valuable feedback and assistance in identifying issues within the app.
 
 # Roadmap
 The development of the BPE app will continue, with improvements and new features based on user interest and feedback. Please don't hesitate to contact the author if you have ideas for further functionality or encounter any issues. Your input is highly appreciated!
