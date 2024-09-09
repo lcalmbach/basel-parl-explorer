@@ -4,9 +4,11 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from utils.lang import get_lang
-from utils.helper import add_year_date, show_table, show_download_button
+from utils.helper import add_year_date, show_table, show_download_button, read_pdf_from_url
 from enum import Enum
 from utils.plots import time_series_line, bar_chart
+from utils.helper import get_completion
+from utils.prompts import txt
 
 # import boto3 # use when accessing text files on S3
 from whoosh.fields import Schema, TEXT, ID
@@ -131,6 +133,9 @@ class Documents:
         #     region_name="us-east-1",
         # )
 
+    def save_summary(self, key, summary):
+        self.all_elements.loc[self.all_elements["key"] == key, "summary"] = summary
+
     def get_elements(self, df, summaries):
         """
         Gets the elements from a pandas DataFrame.
@@ -162,6 +167,7 @@ class Documents:
             "summary",
         ]
         df["signatur_ges"] = df["signatur_ges"].astype(str)
+        df['signatur_ges'] = df['signatur_ges'].apply(lambda x: x + '0' if len(x) == 6 else x)
         df["dokudatum"] = pd.to_datetime(df["dokudatum"])
         df["year"] = df["dokudatum"].dt.year
 
@@ -205,7 +211,7 @@ class Documents:
         folder_name = "grosser_rat_bs_docs/"
         bucket = self.s3.Bucket(bucket_name)
         files = bucket.objects.filter(Prefix=folder_name)
-        st.write(len(list(files)))
+        st.markdown(len(list(files)))
         # Loop through each file in the text_files folder and index them
         with st.spinner("Indexing documents..."):
             placeholder = st.empty()
@@ -239,7 +245,7 @@ class Documents:
             # Show more context before and after
             results.fragmenter.surround = 50
             # Display results
-            st.write(lang("found_documents").format(len(results)))
+            st.markdown(lang("found_documents").format(len(results)))
             for hit in results:
                 dok_laufnr = (
                     hit["filename"]
@@ -249,7 +255,7 @@ class Documents:
                 row = self.all_elements[
                     self.all_elements["dok_laufnr"] == int(dok_laufnr)
                 ].iloc[0]
-                st.write(
+                st.markdown(
                     f"[**{row['titel_dok']}**]({row['url_dok']}) {lang('matter')}: [{row['signatur_ges']}]({row['url_ges']})"
                 )
                 st.markdown(
@@ -1161,10 +1167,38 @@ class PolMatter:
         self.url_doc = row["pdf_file_url"]
 
         self.documents = self.parent.documents.filter(
-            [{"field": "signatur_ges", "value": signatur}]
+            [{"field": "signatur_ges", "value": signatur}] 
         ).sort_values(by="dokudatum")
-        self.summary = self.documents.iloc[0]["summary"]
+        # reset so .loc accessor works correctly
+        self.documents.reset_index(drop=True, inplace=True)
+        if pd.isna(self.documents.loc[0, "summary"]): 
+            self.documents.loc[0, "summary"] = self.generate_summary()  
+            self.summary = self.documents.loc[0, "summary"]
+            key = self.documents.loc[0, "key"]
+            self.parent.documents.save_summary(key, self.summary)
+            self.save_summary()
+        else:
+            self.summary = self.documents.loc[0, "summary"]
 
+    def save_summary(self): 
+        key = self.documents.loc[0, "key"]
+        new_row = {"key": key, "value": self.summary}
+        try:
+            with open(DATA + 'summaries.csv', 'a', encoding='utf-8') as f:
+                f.write(f'{new_row["key"]}|{new_row["value"]}\n')
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    def generate_summary(self):
+        with st.spinner("generiere Zusammenfassung..."):
+            url = self.documents.loc[0, "url_dok"]
+            text = read_pdf_from_url(url)
+            if text >"":
+                summary = get_completion(txt['system_prompt_summary'], txt['user_prompt_summary'].format(text))
+            else:
+                summary = ''
+        return summary
+    
     def show_detail(self):
         st.markdown(f"{lang('matter')}: **{self.title}**")
         tabs = st.tabs(lang("matter_tabs"))
@@ -1201,9 +1235,8 @@ class PolMatter:
             df.columns = lang("field_value_cols")
             table = df.to_html(index=False)
             st.markdown(table, unsafe_allow_html=True)
-            st.write("")
             st.markdown(
-                f"<sub>{lang('summary_ki_generated')}</sub>", unsafe_allow_html=True
+                f"<br><sub>{lang('summary_ki_generated')}</sub>", unsafe_allow_html=True
             )
             st.link_button(
                 f"🔗{lang('matter')}", self.url_matter, help=lang("more_info_pol_matter")
@@ -1546,6 +1579,9 @@ class Parliament:
 
             placeholder.write(lang("loading_matters"))
             df_matters = get_table(Urls.INITIATIVES.value)
+            # make sure the signatur is a string and 7 characters long
+            df_matters['signatur'] = df_matters['signatur'].astype(str)
+            df_matters['signatur'] = df_matters['signatur'].apply(lambda x: x + '0' if len(x) == 6 else x)
             self.pol_matters = PolMatters(self, df_matters)
             self.pol_matters_themes = list(df_matters["thema_1"].unique()) + list(
                 df_matters["thema_2"].unique()
@@ -1579,7 +1615,7 @@ class Parliament:
             df_docs = get_table(Urls.DOCUMENTS.value)
             df_summaries = pd.read_csv(DATA + "summaries.csv", sep="|")
             self.documents = Documents(self, df_docs, df_summaries)
-
+        
             placeholder.write(lang("loading_votations"))
             # takes too much time, 135 MB as of 10/23, use votations.py to preprocess
             # self.votations = Votations(self, get_table(100186))

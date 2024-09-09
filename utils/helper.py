@@ -6,6 +6,7 @@ import string
 from st_aggrid import GridOptionsBuilder, AgGrid, DataReturnMode, GridUpdateMode
 import fitz
 import requests
+from openai import OpenAI
 
 
 LOCAL_HOST = "liestal"
@@ -75,8 +76,8 @@ def read_pdf_from_url(url: str):
                 text += page.get_text()
             return text
     else:
-        raise Exception(f"Failed to download PDF. Status code: {response.status_code}")
-
+        print(f"Failed to download PDF. Status code: {response.status_code}")
+        return ""
 
 def show_download_button(df: pd.DataFrame, cfg: dict = {}) -> None:
     """
@@ -195,3 +196,31 @@ def round_to_nearest(value, base):
         int: The rounded value.
     """
     return int(value / base / base) * base
+
+
+def get_completion(system_prompt, user_prompt):
+    """
+    Generates a completion using OpenAI's GPT-4o model.
+    Args:
+        system_prompt (str): The system prompt for the chat completion.
+        user_prompt (str): The user prompt for the chat completion.
+    Returns:
+        str: The generated completion content.
+    Raises:
+        None
+    """
+    client = OpenAI(
+        api_key=get_var("OPENAI_API_KEY"),
+    )
+
+    completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        temperature=0,
+        max_tokens=4096,
+    )
+
+    return completion.choices[0].message.content.strip()

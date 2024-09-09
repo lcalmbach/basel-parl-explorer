@@ -7,10 +7,10 @@ from streamlit_option_menu import option_menu
 from utils.lang import get_used_languages, init_lang_dict_complete, get_lang
 from grosser_rat import Parliament
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Lukas Calmbach"
 __author_email__ = "lcalmbach@gmail.com"
-VERSION_DATE = "2023-10-21"
+VERSION_DATE = "2024-09-09"
 APP_EMOJI = "🏛️"
 APP_NAME = "BaselParlExplorer"
 GIT_REPO = "https://github.com/lcalmbach/basel-parl-explorer"
@@ -141,7 +141,6 @@ def main() -> None:
     global grosser_rat
 
     init()
-    # update_matters()
     lang = get_lang(PAGE)
     lottie_search_names, ok = get_lottie()
     if ok:
