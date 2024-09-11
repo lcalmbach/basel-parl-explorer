@@ -5,5 +5,4 @@ streamlit_option_menu==0.3.6
 iso639==0.1.4
 PyMuPDF==1.23.4
 whoosh==2.7.4
-boto3==1.28.63
 openai==1.44.0
