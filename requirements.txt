@@ -1,6 +1,6 @@
 streamlit==1.38.0
 streamlit_lottie==0.0.5
-streamlit_aggrid==1.0.5
+streamlit_aggrid==0.3.4.post3
 streamlit_option_menu==0.3.6
 iso639==0.1.4
 PyMuPDF==1.24.10
