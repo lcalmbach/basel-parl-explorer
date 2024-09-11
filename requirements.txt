@@ -3,6 +3,6 @@ streamlit_lottie==0.0.5
 streamlit_aggrid==1.0.5
 streamlit_option_menu==0.3.6
 iso639==0.1.4
-PyMuPDF==1.23.4
+PyMuPDF==1.24.10
 whoosh==2.7.4
 openai==1.44.0
